@@ -439,6 +439,44 @@ blanco puro, para fatigar menos la vista.
 | 15 | **Release skill de `funky-theme-tui`** | **Abierta.** Se deriva del patrón de `funky-theme`, adaptada a `0.x.x` y sin paso de VSIX. Ver §5. |
 | 16 | **`AGENTS.md` de cada repo** | **Abierta.** Cada repo tiene las suyas. El contenido se discute después. Ver §5. |
 | 17 | **Reglas de propagación entre repos** | **Abierta.** Si un cambio de color clave en TUIs debe tocar `funky-theme`, que tiene usuarios activos. Asimetría de velocidad real. Ver §5. |
+| 18 | **Migrar el pipeline de JS a TS** | **Aplazada a propósito**, no descartada. Ver §13. |
+
+---
+
+## 13. Migración a TypeScript — aplazada, no descartada
+
+El pipeline son 4 ficheros JS, 3.842 líneas, cero dependencias y cero build step:
+
+| Fichero | Líneas | Riesgo de tipos |
+|---|---|---|
+| `prototypes/color-math.mjs` | 65 | **real** — longitud de hex, 0-255 vs 0-1, `NaN` |
+| `prototypes/build-prototypes.mjs` | 1.030 | bajo — recorre datos, no invariantes |
+| `check-upstream.mjs` | 494 | bajo — strings y hashes |
+| `prototypes/validate-prototypes.mjs` | 2.253 | bajo — 39 checks sobre JSON ya tipado por forma |
+
+**Por qué se aplazó y no se descartó:**
+
+1. **La fase actual es editar el JSON a mano.** Cero código. Migrar ahora es churn puro
+   justo antes de que la paleta se mueva, y la paleta se va a mover: migraríamos dos veces.
+2. **El módulo que los tipos protegerían de verdad son 65 líneas** — el 1,7% del código. El
+   otro 98% es validación y data-walking, que es donde los tipos ganan menos.
+3. **La clase de bug que realmente mordió no era de tipos**: un campo muerto
+   (`windowsHome`), un `sed` que no ejecutaba, quoting de PowerShell. Los 67 checks
+   automatizados cubren mejor esa clase que el compilador.
+4. **Un repo "full TS" no es alcanzable igual.** `theme-config.js` y `build.js` se transcriben
+   por número de línea desde `funky-theme` y tienen que seguir siendo JS. Siempre habrá una
+   frontera JS; la migración solo reduce el tamaño del lado tipado, no lo elimina.
+
+**Lo que reduce el coste cuando se retome:** Node v24.16.0 ejecuta `.ts` de forma nativa.
+No hay bundler, ni `node_modules`, ni paso de compilación — solo `tsc --noEmit` para chequear.
+Por eso es un pendiente con fecha y no un "no".
+
+**Condición para revisarla:** cuando el pulido de la paleta esté cerrado y
+`build-prototypes.mjs` lleve un par de semanas sin cambiar.
+
+**Por dónde empezar si se retoma:** `color-math.mjs`, no el pipeline. Son 65 líneas
+autónomas y es el único módulo con invariantes reales; migrar los 3.777 restantes aporta
+muy poco. Una migración total en un solo commit, no incremental.
 
 ---
 
