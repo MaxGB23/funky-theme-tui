@@ -1,0 +1,271 @@
+{
+    "$comment":  "Fingerprints of our artifacts and of any real upstream. Paths are POSIX-style with forward slashes except the windowsLocalPrefix field. Run: node check-upstream.mjs",
+    "$commentKinds":  "THREE KINDS OF FILE, and the distinction is load-bearing. 'artifacts' (under agents) are theme files, installable and ours. 'buildInputs' are files the build READS, and their absence is a FAILURE. 'excludedFromBuild' are files the build does not read and will never read, kept on disk as EVIDENCE: their absence is the expected end state, not a broken dependency. A reader must never take an excluded reference for something required.",
+    "$commentPresence":  "PRESENCE, REQUIRED-NESS and COMMITTED-NESS are three separate facts, and this manifest keeps them apart on purpose. A file can be absent from a clone and still be required (a build input). A file can be present on disk and still not be committed (an excluded reference: kept locally, hash-pinned here, excluded by .gitignore). And an artifact's 'installed' flag describes the USER'S LIVE MACHINE, never this clone. The checker derives none of these from each other: the installed row is read from installPath and never from repoPath, so a clone that lacks a vendored file can never contradict installed:true.",
+    "updated":  "2026-09-27",
+    "buildInputs":  [
+                       {
+                           "kind":  "build-input",
+                           "agent":  "claude-code",
+                           "path":  "prototypes/templates/claude-code.json",
+                           "bytes":  2748,
+                           "sha256":  "db491362596dc8c29bcab775a45a92f53420a43e7fba032f1eee6f02e269055f",
+                           "required":  true,
+                           "derivedFrom":  "material-trabajo/claude-code/gentleman-cute.json",
+                           "purpose":  "Structural stub. Carries the 72-slot vocabulary the prototypes builder enumerates; every colour literal is a sentinel, and every key, nesting level and non-colour string is preserved from the template it was derived from. Derived programmatically, never hand-written.",
+                           "provenance":  "ours - derived in-repo from our own template"
+                       },
+                       {
+                           "kind":  "build-input",
+                           "agent":  "opencode",
+                           "path":  "prototypes/templates/opencode.json",
+                           "bytes":  1660,
+                           "sha256":  "f87a7015f4b63db33108e1006f951f66651dce2cd61113a342a18bd29cda8f04",
+                           "required":  true,
+                           "derivedFrom":  "material-trabajo/opencode/gentleman-cute.json",
+                           "purpose":  "Structural stub. Carries the 50-token theme vocabulary plus the two strings the emitter copies verbatim: the $schema URL, and background='none' (the terminal pass-through token, which is NOT a colour and survives the sentinel rewrite).",
+                           "provenance":  "ours - derived in-repo from our own template"
+                       },
+                       {
+                           "kind":  "build-input-external",
+                           "agent":  "pi",
+                           "path":  "~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json",
+                           "required":  true,
+                           "purpose":  "The real gentle-pi 3.7.0 upstream template, read from OUTSIDE the repo. Deliberately not stubbed: it is genuine upstream, its hash lives in agents.pi.upstreamFiles, and D8 left it exactly where it was.",
+                           "provenance":  "upstream - gentle-pi 3.7.0, volatile npm path",
+                           "hashRecordedIn":  "agents.pi.upstreamFiles[1]"
+                       }
+                   ],
+    "excludedFromBuild":  [
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "claude-code",
+                                  "path":  "material-trabajo/claude-code/gentleman-cute.json",
+                                  "bytes":  3138,
+                                  "sha256":  "f8bdbf818033c26ef805404dba644b303830273a52f5e71cbc2e8a1a672f8ece",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  "prototypes/templates/claude-code.json",
+                                  "excludedBecause":  "Vendored base template from another project. D8: this file WAS a build INPUT to prototypes/build-prototypes.mjs; the build now reads the derived stub instead, so it contributes nothing to any emitted theme. Kept on disk as evidence of what the stub was derived from. The stub and this file are the same artefact from two sides, so the stub hash is what pins it.",
+                                  "proofOfEquivalence":  "With the stub in place, all 8 emitted prototypes were byte-for-byte identical to the ones this template produced. Recorded in SOURCES.md under D8."
+                              },
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "opencode",
+                                  "path":  "material-trabajo/opencode/gentleman-cute.json",
+                                  "bytes":  1660,
+                                  "sha256":  "b681e9860137bb481870d0b82d138f0cb95a52241424ea2f07e187e69f93c2c7",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  "prototypes/templates/opencode.json",
+                                  "excludedBecause":  "Vendored base template from another project. D8: this file WAS a build INPUT to prototypes/build-prototypes.mjs; the build now reads the derived stub instead. Kept on disk as evidence of what the stub was derived from.",
+                                  "proofOfEquivalence":  "With the stub in place, all 8 emitted prototypes were byte-for-byte identical to the ones this template produced. Recorded in SOURCES.md under D8."
+                              },
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "claude-code",
+                                  "path":  "material-trabajo/claude-code/gentleman.json",
+                                  "bytes":  3105,
+                                  "sha256":  "ed90d7af3c097dbb7d1abba447bce1273ff78a94c3f393d3d1b2fa4b018721b5",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  null,
+                                  "replacedByNote":  "Nothing, and deliberately so: the prototypes build NEVER read this file, so there is no stub and no upstream path standing in for it. A null here is a fact, not a gap - it is why this file is listed rather than omitted. Only the two entries above have a real replacement.",
+                                  "excludedBecause":  "Vendored base template from another project, the same category as the two entries above. Kept on disk, hash-pinned here, never committed (see .gitignore). Nothing in the pipeline reads it."
+                              },
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "opencode",
+                                  "path":  "material-trabajo/opencode/gentleman.json",
+                                  "bytes":  1660,
+                                  "sha256":  "1f09532ac91b066ad71d5940bce65ce58a134266ef010971d5f597e5d4891f52",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  null,
+                                  "replacedByNote":  "Nothing, and deliberately so: the prototypes build NEVER read this file, so there is no stub and no upstream path standing in for it. A null here is a fact, not a gap - it is why this file is listed rather than omitted. Only the two entries above have a real replacement.",
+                                  "excludedBecause":  "Vendored base template from another project, the same category as the two entries above. Kept on disk, hash-pinned here, never committed (see .gitignore). Nothing in the pipeline reads it."
+                              },
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "pi",
+                                  "path":  "material-trabajo/pi/Gentleman-Cute.json",
+                                  "bytes":  2435,
+                                  "sha256":  "f1b89b56e9db3ba481f77b7e4f7f35f2693ba2c72b1c563029bf05c22d16ea77",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  "~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json",
+                                  "replacedByNote":  "The LIVE upstream copy, which is what the build actually reads (buildInputs[2]). This repo file is a hand-copied STALE GENERATION of the same theme - see the provenance note in agents.pi.artifacts - so it is kept as evidence of what upstream used to look like, and the build deliberately does not read it.",
+                                  "excludedBecause":  "Vendored base template from another project, and in this case a stale copy of it. Kept on disk, hash-pinned here, never committed (see .gitignore)."
+                              },
+                              {
+                                  "kind":  "excluded-reference",
+                                  "agent":  "pi",
+                                  "path":  "material-trabajo/pi/Gentleman.json",
+                                  "bytes":  2629,
+                                  "sha256":  "7c3b8c584585955f4fa82fda7aa1c70776d957e9e17a4da788d3e0b46a71844d",
+                                  "required":  false,
+                                  "committed":  false,
+                                  "replacedBy":  null,
+                                  "replacedByNote":  "Nothing. Upstream gentle-pi ships Gentle.json, not Gentleman.json, so there is no upstream file it stands in for, and the prototypes build never read it. A null here is a fact, not a gap.",
+                                  "excludedBecause":  "Vendored base template from another project, the same category as the two entries above. Kept on disk, hash-pinned here, never committed (see .gitignore). Nothing in the pipeline reads it."
+                              }
+                          ],
+    "excludedFromBuildNote":  "ALL SIX files under material-trabajo/{claude-code,opencode,pi}/ are listed here, not just the two the prototypes build used to read. They are ONE category - base templates vendored from another project - and splitting them across two sections is what made the checker report MISSING for four files whose absence is perfectly legal. They are IGNORED, NOT DELETED: they stay on disk, each is hash-pinned here so the exclusion stays auditable, and .gitignore keeps them out of every commit. The matching artifact rows still carry the live-machine 'installed' flag, which is an independent fact read from installPath: a clone that lacks a vendored file is not evidence that the theme is not installed. Only 3 of the 6 have a real replacement; replacedBy:null on the other 3 is a stated fact, not a gap.",
+    "agents":  {
+                   "claude":  {
+                                  "runtime":  "@anthropic-ai/claude-code",
+                                  "version":  "2.1.280",
+                                  "upstream":  {
+                                                   "kind":  "none",
+                                                   "note":  "No official Gentleman theme exists for Claude Code. The theme is entirely our own work; there is nothing to mirror or fetch."
+                                               },
+                                  "installDir":  "~/.claude/themes",
+                                  "installDirExists":  true,
+                                  "requestedTheme":  "gentleman",
+                                  "configPath":  "~/.claude/settings.json",
+                                  "inAppReference":  "custom:gentleman",
+                                  "format":  {
+                                                 "shape":  "nested overrides map under base",
+                                                 "colorSyntax":  "rgb(r,g,b)",
+                                                 "slotCount":  72,
+                                                 "unknownSlots":  "silently dropped",
+                                                 "flatMapIsWrong":  true
+                                             },
+                                  "artifacts":  [
+                                                    {
+                                                        "slug":  "gentleman",
+                                                        "repoPath":  "material-trabajo/claude-code/gentleman.json",
+                                                        "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                        "installPath":  "~/.claude/themes/gentleman.json",
+                                                        "installed":  false,
+                                                        "sha256":  "ed90d7af3c097dbb7d1abba447bce1273ff78a94c3f393d3d1b2fa4b018721b5"
+                                                    },
+                                                    {
+                                                        "slug":  "gentleman-cute",
+                                                        "repoPath":  "material-trabajo/claude-code/gentleman-cute.json",
+                                                        "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                        "installPath":  "~/.claude/themes/gentleman-cute.json",
+                                                        "installed":  false,
+                                                        "sha256":  "f8bdbf818033c26ef805404dba644b303830273a52f5e71cbc2e8a1a672f8ece"
+                                                    }
+                                                ]
+                              },
+                   "opencode":  {
+                                    "runtime":  "opencode",
+                                    "version":  "unknown / not verified",
+                                    "upstream":  {
+                                                     "kind":  "none",
+                                                     "note":  "No gentle-* package is installed. ~/.config/opencode/package.json deps are @opencode-ai/plugin, opencode-sdd-engram-manage, opencode-subagent-statusline, unique-names-generator; plugins/ and tui-plugins/gentle-logo.tsx ship no themes. The two installed files are SHA256-identical to our repo copies, so they are ours, not upstream."
+                                                 },
+                                    "installDir":  "~/.config/opencode/themes",
+                                    "installDirExists":  true,
+                                    "requestedTheme":  "gentleman",
+                                    "configPath":  "~/.config/opencode/opencode.json",
+                                    "inAppReference":  "gentleman",
+                                    "format":  {
+                                                   "shape":  "flat map under theme, plus $schema",
+                                                   "colorSyntax":  "#RRGGBB",
+                                                   "slotCount":  50
+                                               },
+                                    "artifacts":  [
+                                                      {
+                                                          "slug":  "gentleman",
+                                                          "repoPath":  "material-trabajo/opencode/gentleman.json",
+                                                          "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                          "installPath":  "~/.config/opencode/themes/gentleman.json",
+                                                          "installed":  true,
+                                                          "sha256":  "1f09532ac91b066ad71d5940bce65ce58a134266ef010971d5f597e5d4891f52"
+                                                      },
+                                                      {
+                                                          "slug":  "gentleman-cute",
+                                                          "repoPath":  "material-trabajo/opencode/gentleman-cute.json",
+                                                          "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                          "installPath":  "~/.config/opencode/themes/gentleman-cute.json",
+                                                          "installed":  true,
+                                                          "sha256":  "b681e9860137bb481870d0b82d138f0cb95a52241424ea2f07e187e69f93c2c7"
+                                                      }
+                                                  ]
+                                },
+                   "pi":  {
+                              "runtime":  "pi",
+                              "version":  "unknown / not verified",
+                              "binary":  "M:/.pnpm-global/bin/pi.ps1",
+                              "upstream":  {
+                                               "kind":  "npm",
+                                               "package":  "gentle-pi",
+                                               "version":  "3.7.0",
+                                               "repo":  "https://github.com/Gentleman-Programming/gentle-shell",
+                                               "path":  "~/.pi/agent/npm/node_modules/gentle-pi/themes",
+                                               "packageJson":  "~/.pi/agent/npm/node_modules/gentle-pi/package.json",
+                                               "volatile":  true,
+                                               "note":  "Lives inside node_modules, so \u0027npm update gentle-pi\u0027 silently replaces it. The durable citation is the git URL plus tag, not this path. The postinstall script (scripts/install-gentle-ai.mjs) contains no theme logic and never writes to ~/.pi/agent/themes, so an update will not clobber our installed themes.",
+                                               "versionNote":  "The manifest previously said 3.3.0, which was stale. Verified 3.7.0 on disk at ~/.pi/agent/npm/node_modules/gentle-pi/package.json on 2026-09-27. The upstreamFiles hashes below are all 3.7.0."
+                                           },
+                              "installDir":  "~/.pi/agent/themes",
+                              "installDirExists":  true,
+                              "requestedTheme":  "Gentleman-Cute",
+                              "configPath":  "~/.pi/agent/settings.json",
+                              "inAppReference":  "Gentleman-Cute",
+                              "format":  {
+                                             "shape":  "two layers: vars hex palette + colors var indirections, plus name, export, $schema",
+                                             "colorSyntax":  "#RRGGBB",
+                                             "varsCountRange":  "19-36",
+                                             "colorsCountRange":  "51-56",
+                                             "exportKeys":  [
+                                                                "pageBg",
+                                                                "cardBg",
+                                                                "infoBg"
+                                                            ],
+                                             "schema":  "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
+                                             "thinkingSlots":  [
+                                                                   "thinkingText",
+                                                                   "thinkingOff",
+                                                                   "thinkingMinimal",
+                                                                   "thinkingLow",
+                                                                   "thinkingMedium",
+                                                                   "thinkingHigh",
+                                                                   "thinkingXhigh",
+                                                                   "thinkingMax"
+                                                               ]
+                                         },
+                              "artifacts":  [
+                                                {
+                                                    "slug":  "Gentleman",
+                                                    "repoPath":  "material-trabajo/pi/Gentleman.json",
+                                                    "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                    "installPath":  "~/.pi/agent/themes/Gentleman.json",
+                                                    "installed":  true,
+                                                    "sha256":  "7c3b8c584585955f4fa82fda7aa1c70776d957e9e17a4da788d3e0b46a71844d",
+                                                    "provenance":  "unknown / not verified - there is no upstream Gentleman.json (upstream ships Gentle.json), so this file is a renamed derivative of unknown origin"
+                                                },
+                                                {
+                                                    "slug":  "Gentleman-Cute",
+                                                    "repoPath":  "material-trabajo/pi/Gentleman-Cute.json",
+                                                    "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
+                                                    "installPath":  "~/.pi/agent/themes/Gentleman-Cute.json",
+                                                    "installed":  false,
+                                                    "sha256":  "f1b89b56e9db3ba481f77b7e4f7f35f2693ba2c72b1c563029bf05c22d16ea77",
+                                                    "provenance":  "STALE UPSTREAM GENERATION, not our work - an older generation of the upstream theme itself, hand-copied before gentle-pi 3.7.0 landed. Its vars still use the previous generation\u0027s functional slot names (panel, element, success, info, heading, code, synFunction, synOperator, addBg, removeBg, accentBright), which upstream no longer ships. Only two values differ from current upstream: border #342230 to #563040 and borderSubtle #241822 to #2A1720.",
+                                                    "installNote":  "Deleted 2026-09-27 from ~/.pi/agent/themes/ on purpose, so the maintained upstream copy is the only Gentleman-Cute in Pi\u0027s search path. installed:false is the CORRECT steady state here, not drift. A checker run reporting this as MISSING is reporting the intended state."
+                                                }
+                                            ],
+                              "upstreamFiles":  [
+                                                    {
+                                                        "name":  "Gentle.json",
+                                                        "bytes":  2840,
+                                                        "sha256":  "64bf2f75deacbfec18db0d5814107c5d2eb6f42839cbc5221455aedc63a9c2e1"
+                                                    },
+                                                    {
+                                                        "name":  "Gentleman-Cute.json",
+                                                        "bytes":  2635,
+                                                        "sha256":  "8bcdcb7e21463ac562b4fbf64513ddddc7bf732730df87cc65d6720c5374d72b"
+                                                    },
+                                                    {
+                                                        "name":  "Gentleman-Sexy.json",
+                                                        "bytes":  2615,
+                                                        "sha256":  "f1e97ab82b38c6753c8871e950c466f6fbf2304fe7931e5681cb3cf0439c5f75"
+                                                    }
+                                                ]
+                          }
+               }
+}
