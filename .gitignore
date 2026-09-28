@@ -54,6 +54,18 @@ material-trabajo/pi/Gentleman-Cute.json
 # not input, so nothing downstream can break when they are absent.
 material-trabajo/vscode-themes/maxiano-*.json
 
+# --- Local orchestration state ----------------------------------------------
+# odd/ holds the task-tracking documents for the agent tooling that drove this
+# work. They are a record of the BUILD PROCESS, not of the result: a reader of
+# this repo wants the themes, the builder and the provenance, and none of the
+# three live in here. It is the same category as .atl/ above - local tooling
+# state, rewritten constantly, worth nothing to a clone.
+#
+# The D1-D9 decision record that these files carry is not lost with them: the
+# parts that describe the shipped result were written into SOURCES.md and
+# sources.json, which are tracked.
+odd/
+
 # --- Dependencies ----------------------------------------------------------
 node_modules/
 

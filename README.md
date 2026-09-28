@@ -6,9 +6,8 @@ Genera 8 ficheros de tema desde una única tabla de mapeo y 54 tokens de paleta.
 dependencias, sin build step, sin `node_modules`.
 
 > **Estado: prototipo.** Las paletas todavía están en revisión visual. La escalera de
-> superficies es una decisión abierta, no un contrato estable. Ver
-> [`odd/tasks/funky-tui-prototypes.md`](odd/tasks/funky-tui-prototypes.md) para el
-> razonamiento completo y lo que falta por decidir.
+> superficies es una decisión abierta, no un contrato estable.
+> [`SOURCES.md`](SOURCES.md) lleva el razonamiento y la procedencia.
 
 ## Las 4 variantes
 
