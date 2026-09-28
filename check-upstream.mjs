@@ -172,7 +172,7 @@ if (typeof manifest.agents !== "object" || manifest.agents === null || Array.isA
 
 // ---------------------------------------------------------------- report
 
-console.log(c.head("gentleman theme source check"));
+console.log(c.head("theme source drift check"));
 console.log(c.dim(`manifest  ${MANIFEST}`));
 console.log(c.dim(`updated   ${manifest.updated ?? "unknown / not verified"}`));
 console.log(c.dim(`home      ${homedir()}`));

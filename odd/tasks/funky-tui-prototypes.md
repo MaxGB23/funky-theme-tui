@@ -458,7 +458,7 @@ non-colour string, with every colour literal replaced by a sentinel.
 
 | File | Bytes | SHA256 | Replaces |
 | --- | --- | --- | --- |
-| `prototypes/templates/claude-code.json` | 2748 | `db491362596dc8c2…` | `material-trabajo/claude-code/gentleman-cute.json` |
+| `prototypes/templates/claude-code.json` | 2749 | `64050de6a8943997…` | `material-trabajo/claude-code/gentleman-cute.json` |
 | `prototypes/templates/opencode.json` | 1660 | `f87a7015f4b63db3…` | `material-trabajo/opencode/gentleman-cute.json` |
 
 Pi is **unchanged**. It reads real upstream from `~/.pi/agent/npm/node_modules/gentle-pi/themes/`
@@ -614,10 +614,34 @@ throwaway copy of `prototypes/`, so the real builder was never modified.
 byte-identical to the pre-D8 baseline, both hashes in `SOURCES.md` still correct. Nothing in this
 pass touched a generator, so the emitted set cannot have moved.
 
+## D9 - no committed build input carries the vendored project's identity as data
+
+The owner's rule is that **nothing carrying another project's identity may be committed**; a document
+*citing* the vendored project is fine and is the audit trail, but a build input carrying it as a
+**data value** is not, and one tracked non-doc file did exactly that —
+`prototypes/templates/claude-code.json` carried `"name": "gentleman-cute"`. The field is inert (the
+builder sets `name` from the variant slug on emit, and the 8 emitted files re-hashed byte-for-byte
+identical after the change), so it is now `"structural-stub"`, which names what the file is rather
+than who it came from. `provenance-identity` enforces the rule over the **4 committed build inputs**
+and draws the distinction that makes it enforceable instead of merely strict: a **data value** fails
+with the JSON pointer it was found at, a **path reference** to Pi's externally-installed npm
+template is a citation of a real file outside this repo that cannot be renamed from here, so it is
+allowed — and the exception is scoped to the builder's declared path table, which the check reads on
+every run precisely so the allowance cannot rot into a blank cheque. Mutation-tested both ways: the
+brand back in a stub as a value is `1 failure, exit 1`, the same brand degraded to a bare name in
+the path table is also `1 failure`, and the real path is read and stays silent.
+
+### Verification
+
+`39 checks, 0 failures` (`provenance-identity` is the one D9 adds over D8's 38). The stub's own hash
+moved to `64050de6a8943997…` / 2749 bytes and `sources.json` records it, so `check-upstream.mjs` is
+**28 ok, 0 warnings, 0 failures**. All 8 emitted files are byte-for-byte identical to their
+pre-D9 hashes, and no generator, `settings.json` or `opencode.json` was touched.
+
 ## Next step
 
-Planning phase complete. T1–T9 are done, D7 and D8 are applied, and the validator reports
-**38 checks, 0 failures**.
+Planning phase complete. T1–T9 are done, D7, D8 and D9 are applied, and the validator reports
+**39 checks, 0 failures**.
 
 Two loose ends remain, neither blocking:
 

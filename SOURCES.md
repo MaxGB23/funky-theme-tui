@@ -326,7 +326,7 @@ dependency on them is gone** — replaced by structural stubs that live in the r
 
 | | Path | Bytes | SHA256 |
 | --- | --- | --- | --- |
-| Stub (build input) | `prototypes\templates\claude-code.json` | 2748 | `db491362596dc8c2` |
+| Stub (build input) | `prototypes\templates\claude-code.json` | 2749 | `64050de6a8943997` |
 | Stub (build input) | `prototypes\templates\opencode.json` | 1660 | `f87a7015f4b63db3` |
 | Excluded reference | `material-trabajo\claude-code\gentleman-cute.json` | 3138 | `f8bdbf818033c26e` |
 | Excluded reference | `material-trabajo\opencode\gentleman-cute.json` | 1660 | `b681e9860137bb48` |
@@ -561,6 +561,30 @@ Remove-Item "$env:USERPROFILE\.claude\themes\funky-*-prototype.json", `
 
 The `~/.claude\themes` directory itself was created for this and can be removed if left empty.
 
+### D9 - no committed build input carries the vendored project's identity as data
+
+The rule is that **nothing carrying another project's identity may be committed**. A document
+*citing* the vendored project is fine and is the audit trail this file is; a **build input carrying it
+as a data value** is not. Exactly one tracked non-doc file broke that:
+`prototypes/templates/claude-code.json` had `"name": "gentleman-cute"` — a committed generator input
+naming somebody else's theme as a value of ours. The field is **inert** (the builder sets `name`
+from the variant slug on emit), so it is now `"structural-stub"`, which says what the file is, and
+re-running the build confirmed **8/8 emitted files byte-for-byte identical** to their pre-change
+hashes above. The stub's own hash did move (`64050de6a8943997`, 2749 bytes), so `sources.json` and
+the D8 table record the new one rather than claiming a hash nothing matches — and the unchanged
+28/28 green of `check-upstream.mjs` is what proves the manifest is back in sync. `provenance-identity`
+now enforces the rule over the **4 committed build inputs** — the two stubs plus `theme-config.js`
+and `build.js` — and draws the distinction that makes it enforceable rather than merely strict: a
+**data value** (`"name": "gentleman-cute"`) fails with the JSON pointer it was found at, while a
+**path reference** (`~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json`) is a
+citation of a real external install that this repo cannot rename and is therefore allowed. That
+exception is scoped to the **builder's declared path table and nothing else** — this file and our
+comments are documentation and stay as they are — and the check reads that table on every run, so
+the one existing occurrence is *proven* to be a path instead of waved through. Both directions were
+mutation-tested: putting the brand back into a stub as a value gives `1 failure, exit 1`; degrading
+the external path to a bare brand name also fails, which is what shows the allowance is live; the
+real path is read on every run and stays silent. `39 checks, 0 failures` is the new green.
+
 ---
 
 ## Resolved: the spurious MISSING reports — 2026-09-27
@@ -687,7 +711,7 @@ Test-Path ".\.opencode"                               # expect False
 Get-FileHash -Algorithm SHA256 .\prototypes\templates\claude-code.json, `
   .\prototypes\templates\opencode.json
 node prototypes\build-prototypes.mjs      # writes the 8 emitted files, nothing else
-node prototypes\validate-prototypes.mjs   # expect: 38 checks, 0 failures
+node prototypes\validate-prototypes.mjs   # expect: 39 checks, 0 failures
 
 # What .gitignore keeps out of a commit (D8). The two files the build NEEDS must
 # print nothing and exit 1; everything else must print its path and exit 0.

@@ -13,6 +13,9 @@
  *   7. no template input resolves under `material-trabajo/`, the two in-repo inputs are derived
  *      stubs, and all 7 of Claude Code's background-bearing slots are resolved from their KEY
  *      (D8 — the vendored templates the build used to read are gone from the build's inputs)
+ *   8. no committed build input carries the vendored project's identity as a DATA value, while the
+ *      builder's path reference to Pi's external npm template is allowed and asserted to be one
+ *      (D9 — the rule, and the data-value-versus-path-reference distinction that makes it fair)
  *
  * A variant is TWO orthogonal axes here, exactly as in the builder: `tier` (dark | darker)
  * selects which STEP of the darkening chain the file paints and `opacity` (solid | transparent)
@@ -49,7 +52,7 @@
 
 import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Shared colour FORMULAS only (toHex, luma). Shared colour DATA would let a transcription
@@ -862,6 +865,247 @@ function checkTemplateProvenance() {
 }
 
 checkTemplateProvenance();
+
+// ---------------------------------------------------------------------------
+// D9 — provenance hygiene: no committed build input carries the vendored project's
+// identity as a DATA value
+// ---------------------------------------------------------------------------
+
+/**
+ * The identity strings that belong to the project these templates were derived from.
+ *
+ * Kept to the PROJECT name rather than to one theme of it, so a single entry covers `gentleman`,
+ * `gentleman-cute` and `Gentleman-Cute.json` alike, and matched case-insensitively as a substring.
+ * A second vendored identity later is one more line, not a rewrite of the check.
+ *
+ * SCOPE, because a check that is too wide is a check that eventually gets deleted:
+ *
+ *  - IN: the committed build inputs below, and nothing else. A build input is data the build
+ *    reads, so a value in it is a value this repo acts on and ships. That is the entire rule:
+ *    nothing that carries another project's identity may be committed as data.
+ *  - OUT, on purpose: every document — SOURCES.md, the backlog, DRAFTS/, this task file — and the
+ *    manifest's path records. Those references ARE the audit trail. They say which template a stub
+ *    was derived from and which upstream install is read at runtime, and removing them would
+ *    destroy the provenance the owner requires to stay auditable. `derivedFrom` in sources.json is
+ *    a path reference, and is exactly the shape this check calls legitimate below.
+ *  - OUT: our own generator and validator SOURCE, which both contain the brand inside a RUNTIME
+ *    PATH to Pi's externally-installed npm template
+ *    (~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json). That file lives outside
+ *    this repo, is installed by npm, and cannot be renamed from here. A check that flagged it
+ *    would be wrong, and would force someone to break Pi to satisfy it. The builder's path TABLE
+ *    is the single narrow place our own source is examined below, and only to keep that allowance
+ *    honest — see checkBuildInputIdentity.
+ *
+ * THE DISTINCTION THIS CHECK EXISTS TO DRAW. Every occurrence it finds, in every file it reads, is
+ * one of exactly two things:
+ *
+ *   DATA VALUE      the brand stands alone as a value — `"name": "gentleman-cute"`. The
+ *                   violation: ours, committed, and it names somebody else's project as ours.
+ *   PATH REFERENCE  the brand is a SEGMENT of a filesystem path — `.../themes/Gentleman-Cute.json`.
+ *                   A citation of a real file somewhere else, which is the only reason a path is
+ *                   ever written down.
+ *
+ * Both are found by the same search, so the classifier is a stated rule and not an opinion: the
+ * token around the match is a PATH REFERENCE when it carries a path separator or a file extension,
+ * and a DATA VALUE otherwise. Mutation-tested in both directions — put the brand back into a stub
+ * as a value and this fails, and the builder's existing external path is read on every run and
+ * stays silent.
+ */
+const IDENTITY_NEEDLES = ['gentleman'];
+
+/** Characters that can appear inside one filesystem path segment, so a token can be grown around a match. */
+const IDENTITY_TOKEN_CHAR = /[A-Za-z0-9._\\/-]/;
+
+const DATA_VALUE = 'data-value';
+const PATH_REFERENCE = 'path-reference';
+
+/**
+ * The committed build inputs, in the only sense that matters here: files inside this repo that the
+ * build reads. Built from the same constants the rest of this file already reads them through, so
+ * the list cannot name a file the build no longer uses.
+ *
+ * Pi's template is absent on purpose. It is real upstream outside the repo (TEMPLATE_PROVENANCE
+ * declares it `upstream-external`) and it is the one legitimate PATH REFERENCE this project carries.
+ */
+const COMMITTED_BUILD_INPUTS = [
+  { label: 'claude-code stub', path: TEMPLATES['claude-code'], shape: 'json' },
+  { label: 'opencode stub', path: TEMPLATES.opencode, shape: 'json' },
+  { label: 'theme-config.js (palette source)', path: SOURCE_THEME_CONFIG, shape: 'text' },
+  { label: 'build.js (darker maps)', path: SOURCE_BUILD, shape: 'text' },
+];
+
+/** The run of path-ish characters around `at` — the unit the classification is actually made on. */
+function identityTokenAt(text, at) {
+  let start = at;
+  let end = at;
+  while (start > 0 && IDENTITY_TOKEN_CHAR.test(text[start - 1])) start -= 1;
+  while (end < text.length && IDENTITY_TOKEN_CHAR.test(text[end])) end += 1;
+  return text.slice(start, end);
+}
+
+/** PATH REFERENCE or DATA VALUE. The whole rule, in one expression. */
+const classifyIdentityToken = (token) =>
+  (token.includes('/') || token.includes('\\') || /\.[A-Za-z0-9]+$/.test(token))
+    ? PATH_REFERENCE
+    : DATA_VALUE;
+
+/** The first identity match inside a single string, with its token and classification, or null. */
+function classifyIdentityIn(value) {
+  const lower = value.toLowerCase();
+  for (const needle of IDENTITY_NEEDLES) {
+    const at = lower.indexOf(needle);
+    if (at === -1) continue;
+    const token = identityTokenAt(value, at);
+    return { token, kind: classifyIdentityToken(token) };
+  }
+  return null;
+}
+
+/** Every identity match in a text body, with its line number. Used for non-JSON build inputs. */
+function findIdentityInText(text) {
+  const lower = text.toLowerCase();
+  const out = [];
+  for (const needle of IDENTITY_NEEDLES) {
+    let at = lower.indexOf(needle);
+    while (at !== -1) {
+      const token = identityTokenAt(text, at);
+      out.push({ token, kind: classifyIdentityToken(token), line: text.slice(0, at).split(/\r?\n/).length });
+      at = lower.indexOf(needle, at + needle.length);
+    }
+  }
+  return out;
+}
+
+/**
+ * Every string in a parsed JSON document, as `{ pointer, value }` — keys included, because a key is
+ * a value the loader will read just as surely as the string beside it.
+ */
+function jsonStringLeaves(value, pointer = '<root>', out = []) {
+  if (typeof value === 'string') {
+    out.push({ pointer, value });
+    return out;
+  }
+  if (!value || typeof value !== 'object') return out;
+  for (const [key, child] of Object.entries(value)) {
+    const next = `${pointer}.${key}`;
+    out.push({ pointer: `${next} (key)`, value: key });
+    jsonStringLeaves(child, next, out);
+  }
+  return out;
+}
+
+/**
+ * provenance-identity: D9's rule, over the committed build inputs and the builder's path table.
+ *
+ * Three halves, in the order they can produce a failure:
+ *
+ *  (1) Each declared build input is INSIDE the repo, exists, and parses. "Committed" is asserted
+ *      rather than assumed, because the whole scope of this check rests on it: a build input
+ *      outside the repo is either Pi's upstream — which is not on this list — or the
+ *      vendored-path regression D8 removed. An absent or unparsable input is reported rather than
+ *      skipped, because a file this check cannot read is a file nothing is checking.
+ *  (2) Every identity occurrence in those files is classified, and a DATA VALUE fails with the
+ *      pointer (JSON) or line (text) it was found at.
+ *  (3) The builder's declared TEMPLATES path table is read, and every identity occurrence in it
+ *      must be a PATH REFERENCE. This is the narrow exception from the scope note above, and it is
+ *      here so the exception cannot rot into a blank cheque: Pi's template is named by a brand
+ *      because that is genuinely its filename in someone else's npm install, and if that ever
+ *      became a bare name instead of a path, "we allow the path reference" would no longer be a
+ *      true statement about this repo.
+ */
+function checkBuildInputIdentity() {
+  const check = 'provenance-identity';
+  let scanned = 0;
+  let pathReferences = 0;
+
+  // --- (1) and (2) the committed build inputs ------------------------------------------------
+  for (const input of COMMITTED_BUILD_INPUTS) {
+    if (!input.path) {
+      fail(check, `${input.label} has no path — this script's template table lost the entry, so the ` +
+        'build input cannot be scanned and the gap would be silent');
+      continue;
+    }
+    const rel = relative(ROOT, input.path);
+    if (isAbsolute(rel) || rel.startsWith('..')) {
+      fail(check, `${input.label} resolves to ${input.path}, which is OUTSIDE this repo. The only ` +
+        'external build input is Pi\'s upstream template, it is declared upstream-external, and it ' +
+        'is deliberately not on this list. An external build input is the vendored-path regression ' +
+        'D8 removed.');
+      continue;
+    }
+    if (!existsSync(input.path)) {
+      fail(check, `${input.label} is missing: ${input.path} — an unscannable build input is an ` +
+        'unchecked one. criterion-template-provenance reports the absence too.');
+      continue;
+    }
+
+    // latin1 for the JS sources, matching every other read of them in this file: they carry
+    // non-UTF8 comment bytes and only the ASCII text matters to a substring search.
+    const text = readFileSync(input.path, input.shape === 'json' ? 'utf8' : 'latin1');
+    let found;
+    if (input.shape === 'json') {
+      let parsed;
+      try {
+        parsed = JSON.parse(text.replace(/^\uFEFF/, ''));
+      } catch (error) {
+        fail(check, `${input.label} does not parse: ${error.message} — it cannot be scanned, and an ` +
+          'unscanned build input is an unchecked one');
+        continue;
+      }
+      // Walked as DATA rather than as text: the strings are the values, so a match is reported at
+      // the exact pointer instead of at a guessed line.
+      found = jsonStringLeaves(parsed)
+        .map(({ pointer, value }) => {
+          const hit = classifyIdentityIn(value);
+          return hit && { ...hit, at: pointer };
+        })
+        .filter(Boolean);
+    } else {
+      found = findIdentityInText(text).map(({ token, kind, line }) => ({ token, kind, at: `line ${line}` }));
+    }
+    scanned += 1;
+
+    for (const hit of found) {
+      if (hit.kind === PATH_REFERENCE) {
+        pathReferences += 1;
+        continue;
+      }
+      fail(check, `${input.label} (${hit.at}) carries the vendored project's identity as a DATA ` +
+        `VALUE: ${JSON.stringify(hit.token)}. A committed build input must not ship another ` +
+        `project's name as data — a document may cite it, a value may not.`);
+    }
+  }
+
+  // --- (3) the builder's path table: the exception, kept honest --------------------------------
+  const expressions = builderTemplateExpressions();
+  let witnessed = 0;
+  if (expressions === null) {
+    fail(check, 'could not locate the TEMPLATES table in the builder — the one place our own ' +
+      'source is allowed to name the vendored project cannot be checked, so the allowance is ' +
+      'unverified rather than true');
+  } else {
+    for (const [agent, expr] of Object.entries(expressions)) {
+      for (const hit of findIdentityInText(expr)) {
+        witnessed += 1;
+        if (hit.kind === PATH_REFERENCE) continue;
+        fail(check, `the builder's ${agent} template path is ${JSON.stringify(hit.token)} as a bare ` +
+          'name, not as a path. Pi\'s template genuinely lives at a branded path in an external ' +
+          'npm install and that citation is allowed; a brand standing alone as a value is the ' +
+          'violation this check exists to catch.');
+      }
+    }
+  }
+
+  if (!failures.some((f) => f.startsWith(`[${check}]`))) {
+    pass(check, `no committed build input carries the vendored project's identity as a data value: ` +
+      `${scanned} build inputs scanned, ${pathReferences} path reference(s) found and allowed as ` +
+      `citations; and the builder's declared path table carries ${witnessed} identity occurrence(s), ` +
+      'all of them path references to Pi\'s externally-installed npm template, which is outside ' +
+      'this repo and cannot be renamed from here');
+  }
+}
+
+checkBuildInputIdentity();
 
 // ---------------------------------------------------------------------------
 // Criterion 1 — exact template slot set, per agent, per level
