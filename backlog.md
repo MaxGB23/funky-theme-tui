@@ -349,14 +349,28 @@ funky-theme-tui/      repo de TUIs — nuevo, MIT, empieza en 0.1.0
 |---|---|---|
 | Scripts de generación (`cc-map.mjs`, futuros adaptadores) | Templates, `gentleman-cute.json` y cualquier otro **archivo original** | **No son nuestros.** Son de `gentle-pi` y viven en su paquete npm. Commitearlos los convertiría en distribución no autorizada de material ajeno. |
 | `check-upstream.mjs` | Artefactos generados (`claude-code/*.json`, `pi/*.json`) | Son output de un script. Se regeneran; versionarlos duplica la fuente de verdad |
-| `SOURCES.md`, `sources.json` — **con paths genéricos** | Nada de `~` hardcodeado | Es por máquina. Un repo público no puede llevar rutas absolutas de una sola máquina |
+| `SOURCES.md`, `sources.json` — **con paths genéricos** | Nada de rutas absolutas de una máquina | Es por máquina. Un repo público no puede llevar rutas absolutas de una sola máquina |
 
 > Los scripts se commitean **para reutilización personal**. No es un proyecto que se comparta
 > como librería — es andamiaje propio que se quiere volver a usar.
 
-**Lo que hay que sanear para versionarlo:** `SOURCES.md`, `sources.json` y `check-upstream.mjs`
-hoy referencian `~` de forma absoluta. Hay que parametrizarlos (relativos al home,
-o por variable de entorno) antes de que alguno entre al repo.
+**Sanear para versionarlo — HECHO.** `SOURCES.md`, `sources.json` y este `backlog.md`
+referenciaban la home de Windows de forma absoluta. Se normalizaron todas a `~/...`, que ya
+era la convención mayoritaria dentro del propio `SOURCES.md` (14 usos contra 15 rutas
+absolutas), así que el sanitize también cerró una inconsistencia que ya existía en el doc.
+Además se eliminó el campo `windowsHome` de `sources.json`: era **dato muerto** — nadie lo
+leía, porque `check-upstream.mjs` ya deriva el home de `node:os` y expande `~/` por su cuenta.
+
+La normalización se aplicó sobre los 6 commits con `git filter-branch --tree-filter`, no
+solo sobre el working tree, para que la identidad de máquina no quedara en ningún objeto
+alcanzable.
+
+**Sobre el email del autor: deliberadamente NO se reescribió.** El campo `user.email` global
+de git apunta a un Gmail real, y los 187 commits del repo público `funky-theme` ya lo llevan.
+Reescribir 6 commits para ocultarlo no protege nada que no esté ya expuesto, y dejaría este
+repo inconsistente con los otros 187. Lo que **sí** era fuga nueva y única de este repo era
+el username de Windows y las rutas absolutas, y eso sí se eliminó — verificado: el repo
+público `funky-theme` tiene 0 archivos con rutas de usuario.
 
 ---
 
