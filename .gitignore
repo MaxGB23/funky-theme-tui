@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------------------
+# Every group below is excluded for a stated reason. An ignore entry with no
+# reason attached is indistinguishable from data loss, so add the why or do not
+# add the pattern.
+#
+# GIT DOES NOT SUPPORT TRAILING COMMENTS. A line reading
+#     .atl/   # the skill-registry cache
+# is not "ignore .atl/ with a comment"; it is one literal pattern whose name
+# happens to contain a hash and some spaces, and it matches NOTHING. The
+# directory then stays untracked-and-visible forever. Every comment in this file
+# therefore sits on its OWN line above the pattern it explains.
+# ---------------------------------------------------------------------------
+
+# --- Local runtime state ---------------------------------------------------
+# Machine-specific, rewritten constantly, and worth nothing to anyone else.
+# Committing any of it makes the working tree permanently dirty for every clone.
+#
+# .atl/   - agent tool ledger, the local skill-registry cache
+# .engram/ - engram MCP local runtime config
+# .pi/    - Pi agent state
+.atl/
+.engram/
+.pi/
+
+# .pi/agent/logs/model-debugger.log is called out on purpose, because it is the
+# one file in that tree that looks committable and is not: a TIMESTAMPED log. It
+# grows on every debug session and its contents are meaningless a week later, so
+# a committed copy is both noise and a permanent record of nothing. It is caught
+# twice over, by .pi/ above and by *.log below, on purpose.
+
+# --- Vendored base templates: somebody else's work -------------------------
+# Six files vendored from another project. They are kept on disk and hash-pinned
+# in sources.json as evidence of what the prototype build's derived stubs were
+# made from, so the exclusion stays auditable.
+#
+# These are IGNORED, NOT DELETED. Do not read this block as permission to remove
+# the local copies; sources.json records a hash for each one, and the checker
+# reports an absent one as expected rather than as a failure.
+#
+# Listed one path per line rather than as a directory glob, deliberately: a glob
+# would silently swallow a first-party theme dropped into one of these folders
+# later, and sources.json already pins the exact set of six.
+material-trabajo/claude-code/gentleman-cute.json
+material-trabajo/claude-code/gentleman.json
+material-trabajo/opencode/gentleman-cute.json
+material-trabajo/opencode/gentleman.json
+material-trabajo/pi/Gentleman.json
+material-trabajo/pi/Gentleman-Cute.json
+
+# --- Vendored upstream build output ----------------------------------------
+# 146,622 bytes of another project's COMPILED themes across 5 files. No part of
+# this pipeline reads them - not prototypes/build-prototypes.mjs, not
+# check-upstream.mjs, not validate-prototypes.mjs. They are reference material,
+# not input, so nothing downstream can break when they are absent.
+material-trabajo/vscode-themes/maxiano-*.json
+
+# --- Dependencies ----------------------------------------------------------
+node_modules/
+
+# --- Derived indexes, editor state and OS noise -----------------------------
+# .codegraph/ - local code index, a derived SQLite database, machine-specific.
+# Note it also carries its own nested .gitignore, so it can look ignored even
+# while this line is broken. Trust check-ignore, not the absence of a `!!`.
+.codegraph/
+.vscode/
+.idea/
+*.log
+*.swp
+*.swo
+*~
+~$*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Guard: the two build inputs that MUST stay committable ----------------
+# material-trabajo/vscode-themes/theme-config.js (the palette) and build.js
+# (the upstream darkening chain) are what the prototype build and its validator
+# are transcribed against. Exclude either and the next clone cannot reproduce a
+# single assertion in this repo - and nothing would fail loudly at clone time.
+#
+# These negations are a GUARD, not a fix. The property that actually matters is
+# that no pattern above matches either file; the negations are here so that
+# someone broadening a pattern later cannot quietly break the clone. They work
+# only because nothing above excludes an ANCESTOR directory: git cannot
+# re-include a file whose parent directory is itself excluded.
+#
+# VERIFYING THIS, and a trap worth knowing about:
+#   git check-ignore -v <path>   prints the LAST pattern that matched and exits 0
+#                                for a NEGATED match too. So for these two files it
+#                                prints the '!' line below and exits 0, which looks
+#                                like "ignored" and is the opposite. A leading '!' is
+#                                the only thing that distinguishes the two cases.
+#   git check-ignore <path>      is the one that answers the question: prints the
+#                                path and exits 0 when IGNORED, prints nothing and
+#                                exits 1 when not ignored. Expect the latter, twice.
+#   git status --porcelain --ignored=matching
+#                                is the whole-tree view: ignored files are prefixed
+#                                '!!'. Neither build input appears there.
+!material-trabajo/vscode-themes/theme-config.js
+!material-trabajo/vscode-themes/build.js
