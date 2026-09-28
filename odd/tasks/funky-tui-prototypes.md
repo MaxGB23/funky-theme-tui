@@ -317,16 +317,53 @@ that is correct: `#cbcbcb` genuinely is nearer the pink heading than the yellow 
 direction-of-improvement holds. The distance check is not a palette check — `criterion-6` is what
 pins *which* target is allowed. Two checks, two jobs.
 
-## Blocker: no git repository
+## RESOLVED - the repository exists, and the first five commits are in
 
-`gentle-ai review assess` returns `risk: high` with `code: unassessable` — the directory is not a
-git repo, so there is no inventory to assess and the native review lifecycle cannot run.
-Receipt-driven development is **off** (decided by global), so work-unit commits are impossible and
-everything here is uncommitted. The user deferred the first commit until after the
-gentleman-cute adaptation.
+This section previously read "Blocker: no git repository". **That was wrong on two counts**, and
+both are worth recording because the error is instructive.
 
-This is the only thing standing between the current state and delivery. Nothing about the
-prototypes themselves is outstanding.
+First, the directory *was* already a git repository: `.git` present, branch `master`, **zero
+commits**. An unborn branch is not the absence of a repository. What made
+`gentle-ai review assess` return `risk: high` / `code: unassessable` was the empty inventory, not
+a missing `.git`.
+
+Second, receipt-driven development being **off** (decided by global) never made commits
+impossible. It means no native review lifecycle runs and ordinary repository policy owns delivery.
+Committing is a local, reversible act; the user authorising the first commit is what authorised
+it, not a review switch.
+
+### Commit series — branch `chore/initial-repo`, 22 tracked files
+
+| Commit | Subject | Files |
+| --- | --- | --- |
+| `e8ae01d` | `chore: ignore local runtime state and vendored base templates` | `.gitignore` |
+| `373d152` | `feat: generate Funky prototypes for Claude Code, OpenCode and Pi` | generator, validator, stubs, both build inputs, `sources.json`, `check-upstream.mjs` |
+| `0564857` | `feat: ship 8 generated prototype themes` | the 8 emitted prototypes |
+| `a59364c` | `docs: record palette provenance and the D1-D8 decisions` | `SOURCES.md`, `backlog.md`, `DRAFTS/`, this file |
+| `f4f23e2` | `fix: keep the vendored project's identity out of committed build inputs` | stub `name`, new `provenance-identity` check, banner, manifest fingerprint |
+
+Split as five units rather than one ~250 KB commit, because a single commit that size is not
+reviewable. The generator and its validator stay in one commit on purpose: separated, the
+validator would reference a generator that does not exist yet and could not be verified in
+isolation.
+
+15 paths are ignored and never committed: the 6 vendored base templates, the 5 `maxiano-*.json`
+build outputs, the local runtime state, and the timestamped Pi log. The templates stay **on disk**
+and hash-pinned in `sources.json` — ignored, not deleted, so the exclusion is auditable.
+
+### A defect the delegated writer's own tests missed
+
+`.gitignore` was authored with trailing comments on four lines (`.atl/  # cache`). **Git has no
+trailing-comment syntax**: such a line is one literal pattern whose name contains a hash, and it
+matches nothing. The delegated pass verified the vendored templates and the build inputs
+thoroughly and never checked those four — and two of them were masked (the Pi log was separately
+caught by `*.log`, and `.codegraph/` carries its own nested `.gitignore`), so the tree only *looked*
+right. `.atl/` and `.engram/` were genuinely exposed and would have committed local tool state.
+
+Fixed by moving every comment onto its own line, and verified by asserting **all 19 patterns**
+against `git check-ignore` — 14 that must match, 5 files that must not. Both modes were confirmed
+distinct: `check-ignore` exits 0 when ignored, `check-ignore -v` also exits 0 for a *negated* match,
+which reads as the opposite of what it means.
 
 ## D7 - the tiers are chain steps, and the palette is now the top of the chain
 
