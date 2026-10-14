@@ -135,6 +135,34 @@ const PALETTE = {
 };
 
 /**
+ * TUI-only declared tokens (NOT in the VSCode palette, so NOT asserted by
+ * `assertPaletteMatchesSource` against theme-config.js).
+ *
+ *   errorTui '#ff718f' — Gentleman-Cute vars.error (gentle-pi 4.2.0, upstream
+ *   template outside the repo). User-tested in terminals, preferred over the
+ *   VSCode `errorFg #ff8282`. VSCode keeps `errorFg`; TUI prototypes paint this.
+ */
+const DECLARED_TUI_TOKENS = {
+  errorTui: '#ff718f',
+};
+
+/**
+ * Pi selection flats, user-tested live (NOT palette tokens, NOT composites).
+ *
+ *   dark   #2b2a4a
+ *   darker #23233f
+ *
+ * Pi-only: Claude's `selectionBg` stays on the `accentSelection` wash. The wash
+ * read blue-grey next to Funky's surfaces; these flats are a muted indigo that
+ * sits between canvas and text. Tier-keyed (like DARKER_SYNTAX), never walked
+ * down the chain: the user tested exact hexes per tier.
+ */
+const SELECTION_TUI = {
+  dark: '#2b2a4a',
+  darker: '#23233f',
+};
+
+/**
  * Every opaque hex value the palette defines.
  *
  * The chain's key provenance is now asserted structurally rather than by lookup — `assertChainGround`
@@ -337,15 +365,20 @@ const DERIVED_ALPHAS = {
 
 const ANCHORS = {
   // D4 table
-  accent: 'uiAccent',
+  // accent -> purpleDim #c792ea (user palette, TUI-tested; VSCode uiAccent #8c8eff
+  // reads dark as a solid in Pi/terminals, purpleDim keeps the family but lighter).
+  // success -> greenAccent #b9ffba (user palette, VSCode strings/ansiGreen truth).
+  // error -> errorTui #ff718f (Gentleman-Cute vars.error, user-tested in terminals;
+  // VSCode keeps errorFg #ff8282).
+  accent: 'purpleDim',
   accentBright: 'linkPurple',
   text: 'fgBase',
   muted: 'uiInactive',
   dim: 'uiMuted',
   border: 'uiMuted',
   borderSubtle: 'guideMid',
-  success: 'greenBase',
-  error: 'errorFg',
+  success: 'greenAccent',
+  error: 'errorTui',
   warning: 'yellowBase',
   info: 'cyanDim',
   heading: 'pinkVibrant',
@@ -363,6 +396,7 @@ const ANCHORS = {
   // without any of those six values being named here.
   surfaceBase: 'bgBase',
   surfaceDeep: 'bgDeep',
+  surfaceElevated: 'bgElevated',
   surfaceElevated: 'bgElevated',
 
   // Claude Code's rainbow_* and *_FOR_SUBAGENTS_ONLY slots ARE colour names. Gentleman-Cute
@@ -539,7 +573,7 @@ const MAPPING = {
     warning: 'warning',
   },
 
-  // ---- Pi: 26 vars in hex; `colors` indirections and `export` are structural ----
+  // ---- Pi: 27 vars in hex; `colors` indirections and `export` are structural ----
   // Pi's var vocabulary bundles several roles into one var, so the value follows the
   // STRUCTURAL role of the var's heaviest consumer, not the var's own name:
   //   champagne -> syntaxType  (type/toolTitle/bash all read as one warm light)
@@ -550,26 +584,22 @@ const MAPPING = {
   // `colors` keeps the template's indirection graph verbatim: every value still NAMES a
   // vars key, so no literal colour can leak into it.
   //
-  // The four surface/tool fixes of T7, all of which the structural validator could not see:
-  //   bg/bgPanel were the same colour, so the first rung of D2's ladder did not exist and
-  //     bgDeep was consumed nowhere. bgPanel now takes the deep surface: #24212e canvas
-  //     over #211e2b panel over #2e2a3a element, luma 35.38 / 32.38 / 45.02.
-  //   bgSubtle mirrored bgElement. Upstream sets bgSubtle == bgPanel, so it now takes the
-  //     same value AS bgPanel — the relationship, not the equality, is what's faithful.
-  //     Pi has 4 surface slots and Funky has 3 background tokens, so one tier is borrowed.
-  //     This is the single declared surface exception, and the validator holds it to
-  //     bgPanel rather than waving the whole agent through.
-  //   infoBg equalled bg, so the info surface had no identity. It is now the D1 composite
-  //     of cyanDim over the panel — see DERIVED_ALPHAS.infoSurface.
-  //   toolPendingBg was accentFaint (luma 54.9) over toolSuccessBg at bgElevated (45.02):
-  //     a pending state rendering brighter than a success state, which is backwards.
-  //     Upstream puts pending at the plain panel level, so it now takes bgPanel.
+  // Surface design (approved OpenCode parity): Pi mirrors OpenCode's backgroundPanel ==
+  //   base relationship. bg/bgPanel/bgSubtle/toolPendingBg all sit on surfaceBase, so
+  //   cards (customMessageBg via bgSubtle) read as part of the canvas instead of a dark
+  //   hole, exactly like OpenCode's backgroundPanel. Elevation lives only in bgElement /
+  //   userMessageBg / toolSuccessBg (surfaceElevated). Upstream Gentleman-Cute also keeps
+  //   bgSubtle == bgPanel, so that relationship is preserved; only the rung changed.
+  //   infoBg keeps its own identity as the D1 composite of cyanDim over the panel —
+  //   see DERIVED_ALPHAS.infoSurface. toolPendingBg stays at the plain panel level
+  //   (now surfaceBase), still darker than toolSuccessBg (surfaceElevated).
   pi: {
     vars: {
       bg: 'surfaceBase',
-      bgPanel: 'surfaceDeep',
+      bgPanel: 'surfaceBase',
       bgElement: 'surfaceElevated',
-      bgSubtle: 'surfaceDeep',
+      bgSubtle: 'surfaceBase',
+      userMessageBg: 'surfaceElevated',
       border: 'border',
       borderSubtle: 'borderSubtle',
       text: 'text',
@@ -587,8 +617,10 @@ const MAPPING = {
       sky: 'syntaxOperator',
       warning: 'warning',
       error: 'error',
-      selection: 'accentSelection',
-      toolPendingBg: 'surfaceDeep',
+      // Pi-only decoupling: Claude's selectionBg stays on the accentSelection wash,
+      // Pi's selection paints the user-tested tier flats (SELECTION_TUI).
+      selection: 'selectionTui',
+      toolPendingBg: 'surfaceBase',
       toolSuccessBg: 'surfaceElevated',
       toolErrorBg: 'diffRemovedBg',
       infoBg: 'infoSurface',
@@ -596,10 +628,11 @@ const MAPPING = {
   },
 };
 
-// ---- D6: role decoupling, the one deliberate deviation from the template's graph ----
-// The `colors` graph is the template's indirection structure, and the keyset stays at 26 vars
-// / 55 indirections / 3 export. What changes is ONE edge, because Pi bundles 6 roles onto
-// `champagne` and OpenCode has 4 separate tokens for the same roles.
+// ---- D6: role decoupling, the declared deviations from the template's graph ----
+// The `colors` graph is the template's indirection structure, and the keyset stays at 27 vars
+// / 55 indirections / 3 export plus the ONE declared extension below. What changes are the
+// user-tested edges (DRAFTS/funky-dark-prototype.json), because Pi bundles several roles
+// onto one var and upstream Gentleman-Cute 4.2.0 paints them differently than Funky wants:
 //
 //   champagne -> customMessageLabel, toolTitle, mdHeading, mdCode, syntaxType, bashMode
 //
@@ -607,15 +640,44 @@ const MAPPING = {
 // champagne, which follows its STRUCTURAL role (syntaxType -> syntaxType #fff9b7). So the
 // heading renders yellow while OpenCode renders it pink, and the fix the writer first
 // proposed -- retyping the whole 55-entry indirection table -- is unnecessary: `colors` is
-// already the indirection map, so re-pointing one slot is a one-line change.
+// already the indirection map, so re-pointing slots is a per-slot change.
 //
 // `softRose` holds pinkLight #ffa8e6, the only pink-family value in Pi's fixed 26-var keyset
 // (deepPink is a dark grey-violet, activePink a light periwinkle). Exact hex parity with
 // #ff8ddb is IMPOSSIBLE without adding a var the template does not have, so this closes the
 // family error (yellow vs pink) while knowingly leaving a tone difference. The validator
 // asserts direction of improvement, not hex equality.
+//
+// User-taste edges (all from the tested draft, all still naming vars keys, never literals):
+//   accent -> softRose        the UI accent renders in softRose to match VSCode usage
+//   border -> accent          border reads as accent, not grey
+//   scrollbarThumb -> accent  thumb reads as accent, not grey
+//   mdCode -> mint            inline code renders in mint green, not champagne yellow
+// `selectedBg` stays on the template's `selection`: the floating highlight bar
+// (command-palette.ts paints it via bg("selectedBg")) needs the accent wash to
+// stand out from the flat canvas, and `selection` recomputes per tier. The draft
+// literal #2e2a3a and the bgElement reference both lose to it on contrast.
 const PI_COLOR_OVERRIDES = {
-  colors: { mdHeading: 'softRose' },
+  colors: {
+    mdHeading: 'softRose',
+    accent: 'softRose',
+    border: 'accent',
+    scrollbarThumb: 'accent',
+    mdCode: 'mint',
+  },
+};
+
+/**
+ * Declared colors EXTENSION beyond the template's keyset (NOT an override).
+ *
+ *   scrollbarTrack -> bg   upstream Gentleman-Cute 4.2.0 omits it (falls back to
+ *   muted); the user tested `"scrollbarTrack": "bg"` live and it matters. The
+ *   keyset therefore ships 56 colors indirections, not 55, and the validator
+ *   allowlists exactly this one extra key with this one target. Anything else
+ *   extra still fails criterion-1.
+ */
+const PI_COLOR_EXTENSIONS = {
+  colors: { scrollbarTrack: 'bg' },
 };
 
 // `slug` is the filename WITHOUT extension, and it is also what Claude Code's `name` and Pi's
@@ -703,7 +765,7 @@ const substituteSyntax = (hex, tier, table) => {
 
 /** A flat palette token, walked down the chain to the step its tier paints. */
 const resolveFlat = (token, tier) => {
-  const hex = PALETTE[token];
+  const hex = PALETTE[token] ?? DECLARED_TUI_TOKENS[token];
   if (!hex) throw new Error(`unknown palette token: ${token}`);
   return substituteSyntax(substitute(hex, TIER_STEP[tier], CHAIN_LINKS), tier, DARKER_SYNTAX);
 };
@@ -729,7 +791,8 @@ function isKnownAnchor(anchor) {
   return anchor in ANCHORS
     || anchor in PALETTE
     || anchor in ALPHA_TOKENS
-    || anchor in DERIVED_ALPHAS;
+    || anchor in DERIVED_ALPHAS
+    || anchor === 'selectionTui';
 }
 
 /**
@@ -766,6 +829,14 @@ function resolve(anchor, variant) {
     // Fall back, don't guess.
     const value = tier === 'darker' && spec.darkerValue ? spec.darkerValue : spec.value;
     return flatten(value, spec.surface, tier);
+  }
+
+  // Pi-only user-tested selection flats. Tier-keyed exact hexes, never chained:
+  // the user tested #2b2a4a (dark) and #23233f (darker) live. Claude stays on the wash.
+  if (anchor === 'selectionTui') {
+    const hex = SELECTION_TUI[tier];
+    if (!hex) throw new Error(`unknown selection tier: ${tier}`);
+    return hex;
   }
 
   if (anchor in ANCHORS) return resolveFlat(ANCHORS[anchor], tier);
@@ -829,12 +900,19 @@ function emitPi(template, variant) {
 
   // `colors` and `export` carry no colours: they are the template's indirection graph,
   // asserted here to be names that resolve to a vars key. A literal colour cannot survive.
-  // D6 re-points the slots named in PI_COLOR_OVERRIDES; nothing else in the graph moves.
+  // D6 re-points the slots named in PI_COLOR_OVERRIDES; PI_COLOR_EXTENSIONS adds the
+  // declared extra keys beyond the template (scrollbarTrack only); nothing else moves.
   const indirection = (label, section) => {
     const overrides = PI_COLOR_OVERRIDES[section] || {};
+    const extensions = PI_COLOR_EXTENSIONS[section] || {};
     for (const slot of Object.keys(overrides)) {
       if (!Object.prototype.hasOwnProperty.call(template[section], slot)) {
         throw new Error(`pi/${label}: override "${slot}" is not a template slot`);
+      }
+    }
+    for (const slot of Object.keys(extensions)) {
+      if (Object.prototype.hasOwnProperty.call(template[section], slot)) {
+        throw new Error(`pi/${label}: extension "${slot}" is already a template slot (it belongs in overrides)`);
       }
     }
     const out = {};
@@ -842,6 +920,11 @@ function emitPi(template, variant) {
       const target = Object.prototype.hasOwnProperty.call(overrides, slot)
         ? overrides[slot]
         : template[section][slot];
+      if (!(target in vars)) throw new Error(`pi/${section}/${slot}: "${target}" is not a vars key`);
+      out[slot] = target;
+    }
+    for (const slot of Object.keys(extensions)) {
+      const target = extensions[slot];
       if (!(target in vars)) throw new Error(`pi/${section}/${slot}: "${target}" is not a vars key`);
       out[slot] = target;
     }
@@ -1058,7 +1141,7 @@ const ladderReport = assertSurfaceLadder();
 const TEMPLATES = {
   'claude-code': join(HERE, 'templates', 'claude-code.json'),
   opencode: join(HERE, 'templates', 'opencode.json'),
-  // D5, unchanged: the maintained gentle-pi 3.7.0 copy, still read from OUTSIDE the repo because
+  // D5, unchanged: the maintained gentle-pi 4.2.0 copy, still read from OUTSIDE the repo because
   // it genuinely is the upstream. material-trabajo/pi/Gentleman-Cute.json is a stale earlier
   // generation (panel, element, success, heading, addBg, removeBg) and D8 did not touch it.
   pi: join(homedir(), '.pi', 'agent', 'npm', 'node_modules', 'gentle-pi', 'themes', 'Gentleman-Cute.json'),
