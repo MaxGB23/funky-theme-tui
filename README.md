@@ -1,87 +1,105 @@
-# funky-theme-tui
+# Funky Theme for your Favorite AI Agents 👻
 
-Prototipos de tema Funky para terminales: **Claude Code**, **OpenCode** y **Pi**.
+Funky theme prototypes for AI coding agents: **Claude Code**, **OpenCode**, and **Pi**.
 
-Genera 8 ficheros de tema desde una única tabla de mapeo y 54 tokens de paleta. Sin
-dependencias, sin build step, sin `node_modules`.
+Generates 8 theme files from a single mapping table and 54 palette tokens. No
+dependencies, no build step, no `node_modules`.
 
-> **Estado: prototipo.** Las paletas todavía están en revisión visual. La escalera de
-> superficies es una decisión abierta, no un contrato estable.
-> [`SOURCES.md`](SOURCES.md) lleva el razonamiento y la procedencia.
+> **Status: prototype.** Palettes are still under visual review. The surface
+> ladder is an open decision, not a stable contract.
+> [`SOURCES.md`](SOURCES.md) tracks the rationale and provenance.
 
-## Las 4 variantes
+## The 4 Variants
 
-| Variante | Claude Code | OpenCode | Pi |
+| Variant | Claude Code | OpenCode | Pi |
 |---|---|---|---|
 | `dark` | ✅ | ✅ | ✅ |
 | `darker` | ✅ | ✅ | ✅ |
 | `dark-transparent` | ❌ | ✅ | ❌ |
 | `darker-transparent` | ❌ | ✅ | ❌ |
 
-`dark` y `darker` son **dos pasos de una escalera de tres**, no un par arbitrario: `dark` usa
-la superficie que antes ocupaba `darker`, y `darker` queda near-black.
+`dark` and `darker` are **two steps of a three-step ladder**, not an arbitrary pair:
+`dark` uses the surface that previously belonged to `darker`, and `darker` becomes
+near-black.
 
-| Paso | base | deep | elevated |
+| Step | base | deep | elevated |
 |---|---|---|---|
-| step 0 (referencia, no se shippea) | `#24212e` | `#211e2b` | `#2e2a3a` |
+| step 0 (reference, not shipped) | `#24212e` | `#211e2b` | `#2e2a3a` |
 | step 1 `dark` | `#181520` | `#121018` | `#201d2a` |
 | step 2 `darker` | `#0a0910` | `#060509` | `#13111a` |
 
-Las variantes `-transparent` son idénticas a sus sólidas **salvo en `background`**, que pasa
-a `"none"`. Solo OpenCode soporta transparencia real; Claude Code y Pi no tienen forma de
-expresarla, así que no se generan variants para ellos en vez de generar una que mienta.
+The `-transparent` variants are identical to their solid counterparts **except for
+`background`**, which becomes `"none"`. Only OpenCode supports true transparency;
+Claude Code and Pi have no way to express it, so variants aren't generated for them
+rather than generating one that lies.
 
-## Instalar
+## Install
 
-Copiá el `.json` al directorio de temas de tu terminal y activalo por nombre.
+Copy the `.json` to your terminal's theme directory and activate by name.
 
 **Claude Code** — `~/.claude/themes/`
 
 ```jsonc
-// ~/.claude/settings.json — el prefijo `custom:` es obligatorio para temas propios
+// ~/.claude/settings.json — the `custom:` prefix is required for custom themes
 { "theme": "custom:funky-dark-prototype" }
 ```
 
 **OpenCode** — `~/.config/opencode/themes/`
 
 ```jsonc
-// ~/.config/opencode/opencode.json — nombre pelado, sin prefijo
+// ~/.config/opencode/opencode.json — bare name, no prefix
 { "theme": "funky-dark-prototype" }
 ```
 
 **Pi** — `~/.pi/agent/themes/`
 
 ```jsonc
-// ~/.pi/agent/settings.json — nombre pelado, sin prefijo
+// ~/.pi/agent/settings.json — bare name, no prefix
 { "theme": "funky-dark-prototype" }
 ```
 
-## Reconstruir y verificar
+## Your Terminal Is Also Part of the Theme
+
+No theme lives in isolation: the emulator (Warp, Orca, Windows Terminal, whatever
+you use) contributes its own scheme — e.g., Tokyo Night, Dracula, Catppuccin — and
+its color overrides, and that tints what the agent doesn't paint.
+
+- **Pi doesn't paint the canvas**: it uses your terminal's background. To match the
+  chosen variant, set your profile bg to `#181520` (dark) or `#0a0910` (darker).
+- **The assistant body in Pi uses your terminal's default foreground**, not the
+  theme's `text` variable. If text looks gray/blueish in one terminal and fine in
+  another, check that profile's fg and palette before the JSON.
+- **OpenCode ships both solid and transparent variants** precisely to fit more users:
+  the solid one paints the canvas (`background` with a color), the transparent one
+  lets it pass through with `"background": "none"` and inherits your terminal's bg.
+
+## Rebuild and Verify
 
 ```bash
-node prototypes/build-prototypes.mjs       # emite los 8 JSON desde los tokens de paleta
-node prototypes/validate-prototypes.mjs    # 39 checks sobre los artefactos
-node check-upstream.mjs                    # 28 checks de procedencia
+node prototypes/build-prototypes.mjs       # emits the 8 JSONs from palette tokens
+node prototypes/validate-prototypes.mjs    # 39 checks on the artifacts
+node check-upstream.mjs                    # 28 provenance checks
 ```
 
-El build es **determinista**: correrlo de nuevo sobre un árbol limpio no produce ni un byte
-de diferencia. Eso es lo que permite versionar los artefactos generados sin que la
-verificación dependa de compararlos contra un golden.
+The build is **deterministic**: running it again on a clean tree produces not a
+single byte of difference. That's what lets generated artifacts be versioned without
+verification depending on comparing them against a golden file.
 
-`check-upstream.mjs` es un **drift checker** read-only: lee `sources.json`, verifica por
-SHA-256 cada artefacto registrado y cada fichero upstream de Pi, y reporta drift. Nunca
-escribe ni borra nada, y sale con código 1 si hay algún fallo.
+`check-upstream.mjs` is a **read-only drift checker**: it reads `sources.json`,
+verifies every registered artifact and every Pi upstream file by SHA-256, and
+reports drift. It never writes or deletes anything, and exits with code 1 on any
+failure.
 
-## Qué hay y qué no en este repo
+## What's in This Repo and What Isn't
 
-**Se versiona:** los scripts de generación y verificación, la paleta, y los 8 JSON
-generados.
+**Versioned:** generation and validation scripts, the palette, and the 8 generated
+JSONs.
 
-**No se versiona:** los templates base y el tema `Gentleman-Cute` de los que deriva la
-paleta. Son de otro proyecto (`gentle-pi`) y viven en su paquete npm; commitearlos sería
-distribución no autorizada de material ajeno. `.gitignore` los excluye y `check-upstream.mjs`
-falla si alguno aparece.
+**Not versioned:** the base templates and the `Gentleman-Cute` theme the palette
+derives from. They belong to another project (`gentle-pi`) and live in its npm
+package; committing them would be unauthorized distribution of third-party material.
+`.gitignore` excludes them and `check-upstream.mjs` fails if any appear.
 
-La procedencia completa está en [`SOURCES.md`](SOURCES.md) y
-[`sources.json`](sources.json), con un hash por archivo excluido para que la exclusión siga
-siendo auditable.
+Full provenance is in [`SOURCES.md`](SOURCES.md) and
+[`sources.json`](sources.json), with a hash per excluded file so the exclusion
+stays auditable.
