@@ -292,6 +292,27 @@ const SELECTION_TUI = {
   darker: '#23233f',
 };
 
+/**
+ * User-tested TUI tokens with NO upstream source (NOT palette, NOT template,
+ * NOT chain-produced). Mirror of the builder's DECLARED_TUI_TOKENS additions —
+ * own copy on purpose. Each entry must be consumed by at least one emitted
+ * slot (asserted with the outputs below), or it is a blank cheque.
+ */
+const DECLARED_TUI_VALUES = {
+  '#eff0eb': { via: 'user-tested body text, all agents (variables keep fgBase)' },
+  '#8e8ea7': { via: 'user-tested dim comment' },
+};
+
+/**
+ * OpenCode-only panel surface per tier. Mirror of the builder's PANEL_TUI —
+ * own copy on purpose. Dark sits one lift below step-1 elevated; darker
+ * applies the same lift to step-2 elevated (see builder for the derivation).
+ */
+const PANEL_TUI = {
+  dark: '#1c1925',
+  darker: '#0f0d15',
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -1313,15 +1334,18 @@ const SURFACE_SLOTS = {
   },
   opencode: {
     // `background` is NOT a rung here: it is "none" in a transparent variant and the base
-    // surface in a solid one, so it cannot be a constant across the files of a tier. The base
-    // rung is carried by backgroundPanel + diffContextBg, which are in every file.
-    base: ['backgroundPanel', 'diffContextBg'],
+    // surface in a solid one, so it cannot be a constant across the files of a tier.
+    // backgroundPanel + diffContextBg are NOT base either since the user-tested panel
+    // surface (PANEL_TUI, one lift below elevated per tier) — they are pinned by
+    // checkPanelTui in every file instead, transparent ones included.
+    base: [],
     deep: [],
     elevated: ['backgroundElement'],
   },
   pi: {
-    // Pi mirrors OpenCode (approved): backgroundPanel == base, so bgPanel/bgSubtle/
-    // toolPendingBg sit on the base rung, not deep. Cards elevate via bgElement.
+    // Pi keeps panel == base (its own approved relationship) even though OpenCode
+    // moved to its own panel surface: bg/bgPanel/bgSubtle/toolPendingBg sit on the
+    // base rung, not deep. Cards elevate via bgElement.
     base: ['bg', 'bgPanel', 'bgSubtle', 'toolPendingBg'],
     deep: [],
     elevated: ['bgElement', 'toolSuccessBg'],
@@ -1561,6 +1585,36 @@ function checkSelectionTui() {
   }
 }
 
+/**
+ * OpenCode-only panel surface: backgroundPanel + diffContextBg must equal
+ * PANEL_TUI for their own tier, in EVERY opencode file including transparent
+ * ones (unlike background, the panel never passes through).
+ */
+function checkPanelTui() {
+  const check = 'criterion-4-panel';
+  let verified = 0;
+  const expected = variantsFor('opencode').length * 2;
+  for (const variant of variantsFor('opencode')) {
+    const slots = slotsOf('opencode', outputs[`opencode/${variant.id}`]);
+    for (const slot of ['backgroundPanel', 'diffContextBg']) {
+      if (!(slot in (slots ?? {}))) {
+        fail(check, `opencode/${variant.id}.${slot}: missing, cannot verify the PANEL_TUI surface`);
+        continue;
+      }
+      if (toHex(slots[slot]) !== PANEL_TUI[variant.tier]) {
+        fail(check, `opencode/${variant.id}.${slot} = ${toHex(slots[slot])}, expected PANEL_TUI ` +
+          `(${variant.tier}) = ${PANEL_TUI[variant.tier]}`);
+      } else {
+        verified += 1;
+      }
+    }
+  }
+  if (PANEL_TUI.dark === PANEL_TUI.darker) fail(check, `PANEL_TUI dark == darker: tier surfaces must differ`);
+  if (verified === expected && PANEL_TUI.dark !== PANEL_TUI.darker) {
+    pass(check, `opencode panel paints the user-tested surface per tier (dark ${PANEL_TUI.dark} / darker ${PANEL_TUI.darker}) in all ${variantsFor('opencode').length} files`);
+  }
+}
+
 function checkValuesAccountedFor() {
   const check = 'criterion-4-accounting';
   const paletteHexes = Object.values(readPalette());
@@ -1624,8 +1678,13 @@ function checkValuesAccountedFor() {
     // Template-sourced declared values: flat across tiers, evidenced by the
     // upstream template itself (see DECLARED_TEMPLATE_VALUES).
     for (const hex of Object.keys(DECLARED_TEMPLATE_VALUES)) allowed[tier].add(hex);
+    // User-tested TUI tokens with no upstream: flat across tiers, each one must
+    // be consumed below (see the consumption assertion after the loop).
+    for (const hex of Object.keys(DECLARED_TUI_VALUES)) allowed[tier].add(hex);
     // Pi-only user-tested selection flat for exactly this tier (never chained).
     allowed[tier].add(SELECTION_TUI[tier]);
+    // OpenCode-only panel surface for exactly this tier (never chained).
+    allowed[tier].add(PANEL_TUI[tier]);
   }
 
   for (const agent of Object.keys(TEMPLATES)) {
@@ -1652,10 +1711,31 @@ function checkValuesAccountedFor() {
       }
     }
   }
+  // Consumption discipline for the no-upstream table: every DECLARED_TUI_VALUES
+  // hex must reach at least one emitted slot, or the entry is a blank cheque.
+  // (Chain-declared values prove themselves by being chain-produced above;
+  // template values by the upstream file; these have neither, so consumption
+  // is their only evidence.)
+  {
+    const seen = new Set();
+    for (const agent of Object.keys(TEMPLATES)) {
+      for (const variant of variantsFor(agent)) {
+        for (const value of Object.values(slotsOf(agent, outputs[`${agent}/${variant.id}`] ?? {}))) {
+          seen.add(toHex(value));
+        }
+      }
+    }
+    for (const [hex, entry] of Object.entries(DECLARED_TUI_VALUES)) {
+      if (!seen.has(hex)) {
+        fail(check, `DECLARED_TUI_VALUES lists ${hex} (${entry.via}), but no emitted slot paints it`);
+      }
+    }
+  }
   if (!failures.some((f) => f.startsWith(`[${check}]`))) {
     pass(check, `every colour in every output is a palette token, a per-step composite, one of the ` +
-      `${Object.keys(DECLARED_PROVENANCE).length} declared provenance values at or below its tier's step, or one of the ` +
-      `${Object.keys(DECLARED_TEMPLATE_VALUES).length} declared template-sourced values; ` +
+      `${Object.keys(DECLARED_PROVENANCE).length} declared provenance values at or below its tier's step, one of the ` +
+      `${Object.keys(DECLARED_TEMPLATE_VALUES).length} declared template-sourced values, or one of the ` +
+      `${Object.keys(DECLARED_TUI_VALUES).length} consumed user-tested values; ` +
       `every chain-declared value is chain-produced at the step it claims; the only "none" is opencode/background ` +
       `in a transparent variant`);
   }
@@ -1874,9 +1954,31 @@ const DEEMPHASIS_PAIRS = [
   ['pi', 'dim', 'muted'],
 ];
 
+/**
+ * Acknowledged ordering exceptions. Narrow by construction: only the listed
+ * pair is exempt, everything else stays strict. An entry whose pair now
+ * recedes properly is STALE and fails (same discipline as
+ * TRANSCRIBED_NOT_EMITTED) so the exception cannot outlive its reason.
+ *
+ *   opencode syntaxComment vs textMuted — user-tested tone #8e8ea7 sits 1.3
+ *   luma above muted and the user is still iterating the comment color.
+ *   Revisit when the tone is final: either the new tone recedes (remove this)
+ *   or it still inverts (keep with the new numbers).
+ */
+const ORDERING_EXCEPTIONS = [
+  {
+    agent: 'opencode', recessive: 'syntaxComment', dominant: 'textMuted',
+    reason: 'user-tested comment tone, iterating until final',
+  },
+];
+
 function checkDeemphasisOrdering() {
   const check = 'semantic-ordering';
   let pairs = 0;
+  const acknowledged = [];
+
+  const isExcepted = (agent, recessive, dominant) => ORDERING_EXCEPTIONS.some((e) =>
+    e.agent === agent && e.recessive === recessive && e.dominant === dominant);
 
   for (const [agent, recessive, dominant] of DEEMPHASIS_PAIRS) {
     for (const variant of variantsFor(agent)) {
@@ -1885,15 +1987,25 @@ function checkDeemphasisOrdering() {
       pairs += 1;
       const low = toHex(slots[recessive]);
       const high = toHex(slots[dominant]);
-      if (!(luma(low) < luma(high))) {
-        fail(check, `${agent}/${variant.id}: ${recessive} ${describeLuma(low)} is not darker than ` +
-          `${dominant} ${describeLuma(high)} — the recessive slot must recede`);
+      if (luma(low) < luma(high)) {
+        if (isExcepted(agent, recessive, dominant)) {
+          fail(check, `${agent}/${variant.id}: ${recessive} now recedes behind ${dominant} — ` +
+            `the ORDERING_EXCEPTIONS entry is stale, remove it`);
+        }
+        continue;
       }
+      if (isExcepted(agent, recessive, dominant)) {
+        acknowledged.push(`${agent}/${variant.id}: ${recessive} vs ${dominant}`);
+        continue;
+      }
+      fail(check, `${agent}/${variant.id}: ${recessive} ${describeLuma(low)} is not darker than ` +
+        `${dominant} ${describeLuma(high)} — the recessive slot must recede`);
     }
   }
 
   if (!failures.some((f) => f.startsWith(`[${check}]`))) {
-    pass(check, `${pairs} de-emphasis pairs recede in every file that has them: borderSubtle < border, dim < muted`);
+    pass(check, `${pairs} de-emphasis pairs recede in every file that has them: borderSubtle < border, dim < muted` +
+      (acknowledged.length ? `, plus ${acknowledged.length} acknowledged exception(s) (opencode syntaxComment vs textMuted: user iterating tone)` : ''));
   }
 }
 
@@ -2504,6 +2616,7 @@ checkSurfaces();
 checkAlphaPerVariant();
 checkDarkValuesNotLeaked();
 checkSelectionTui();
+checkPanelTui();
 checkValuesAccountedFor();
 checkCriterion6();
 checkSurfaceTiers();

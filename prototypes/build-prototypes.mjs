@@ -144,6 +144,31 @@ const PALETTE = {
  */
 const DECLARED_TUI_TOKENS = {
   errorTui: '#ff718f',
+  // textTui #eff0eb — user-tested body text for ALL agents. Variables keep
+  // fgBase #f8f8f2 via direct refs (opencode syntaxVariable -> fgBase), because
+  // the text anchor now paints body copy, not identifiers.
+  textTui: '#eff0eb',
+  // commentTui #8e8ea7 — user-tested dim comment, between muted and dim.
+  // Neither hex is in the VSCode palette, so neither is asserted against
+  // theme-config.js; both are allowlisted in the validator by exact value.
+  commentTui: '#8e8ea7',
+};
+
+/**
+ * OpenCode panel surface per tier, user-tested (NOT a palette token, NOT chained).
+ *
+ *   dark   #1c1925
+ *   darker #0f0d15
+ *
+ * The dark value sits one lift below elevated at step 1
+ * (#201d2a - #1c1925 = (4,4,5) per channel); darker applies the same lift to
+ * the step-2 elevated (#13111a - (4,4,5) = #0f0d15). Tier-keyed exact hexes,
+ * like SELECTION_TUI — the chain is extended only where a link exists, and no
+ * link produces these, so they are declared, not walked.
+ */
+const PANEL_TUI = {
+  dark: '#1c1925',
+  darker: '#0f0d15',
 };
 
 /**
@@ -370,9 +395,11 @@ const ANCHORS = {
   // success -> greenAccent #b9ffba (user palette, VSCode strings/ansiGreen truth).
   // error -> errorTui #ff718f (Gentleman-Cute vars.error, user-tested in terminals;
   // VSCode keeps errorFg #ff8282).
+  // text -> textTui #eff0eb (user-tested body text, ALL agents; identifiers keep
+  // fgBase #f8f8f2 through direct palette refs, never through this anchor).
   accent: 'purpleDim',
   accentBright: 'linkPurple',
-  text: 'fgBase',
+  text: 'textTui',
   muted: 'uiInactive',
   dim: 'uiMuted',
   border: 'uiMuted',
@@ -514,6 +541,14 @@ const MAPPING = {
   },
 
   // ---- OpenCode: 50 tokens, flat map under `theme`, every value #RRGGBB --------
+  // User-tested draft (DRAFTS/funky-dark-prototype-opencode.json): markdown roles
+  // follow their VSCode families (heading softRose, links/strong cyanAccent,
+  // listItem syntaxType, code/blockQuote success green), border reads as accent,
+  // comments dim to commentTui, keyword/number/punctuation take their named
+  // palette tokens, variables keep fgBase while body text moves to textTui, and
+  // the panel surface (backgroundPanel + diffContextBg) sits one lift below
+  // elevated per tier (PANEL_TUI). Darker adapts only where the tier drives the
+  // value: panel flats + chain-walked surfaces; every other token is flat.
   opencode: {
     accent: 'accent',
     // The template's "none" is not a colour, it is terminal transparency, and it is only
@@ -524,15 +559,15 @@ const MAPPING = {
     // The two variants therefore differ on this key and nowhere else.
     background: 'passThrough:surfaceBase',
     backgroundElement: 'surfaceElevated',
-    backgroundPanel: 'surfaceBase',
-    border: 'border',
+    backgroundPanel: 'panelTui',
+    border: 'accent',
     borderActive: 'accentBright',
     borderSubtle: 'borderSubtle',
     diffAdded: 'success',
     diffAddedBg: 'diffAddedBg',
     diffAddedLineNumberBg: 'diffAddedBg',
     diffContext: 'dim',
-    diffContextBg: 'surfaceBase',
+    diffContextBg: 'panelTui',
     diffHighlightAdded: 'success',
     diffHighlightRemoved: 'error',
     diffHunkHeader: 'muted',
@@ -542,32 +577,36 @@ const MAPPING = {
     diffRemovedLineNumberBg: 'diffRemovedBg',
     error: 'error',
     info: 'info',
-    markdownBlockQuote: 'dim',
-    markdownCode: 'code',
-    markdownCodeBlock: 'text',
+    markdownBlockQuote: 'success',
+    markdownCode: 'success',
+    // Code-block base keeps fgBase while body copy moves to textTui: same
+    // variables-vs-copy split as syntaxVariable.
+    markdownCodeBlock: 'fgBase',
     markdownEmph: 'muted',
-    markdownHeading: 'heading',
+    markdownHeading: 'soft',
     markdownHorizontalRule: 'borderSubtle',
     markdownImage: 'accent',
-    markdownImageText: 'accent',
-    markdownLink: 'accent',
-    markdownLinkText: 'accent',
+    markdownImageText: 'soft',
+    markdownLink: 'code',
+    markdownLinkText: 'code',
     markdownListEnumeration: 'muted',
-    markdownListItem: 'accent',
-    markdownStrong: 'accentBright',
+    markdownListItem: 'syntaxType',
+    markdownStrong: 'code',
     markdownText: 'text',
     primary: 'accent',
     secondary: 'muted',
     success: 'success',
-    syntaxComment: 'dim',
+    syntaxComment: 'commentTui',
     syntaxFunction: 'syntaxFunction',
-    syntaxKeyword: 'syntaxKeyword',
-    syntaxNumber: 'syntaxNumber',
+    syntaxKeyword: 'purpleBright',
+    syntaxNumber: 'cyanAccent',
     syntaxOperator: 'syntaxOperator',
-    syntaxPunctuation: 'syntaxPunctuation',
+    syntaxPunctuation: 'yellowVibrant',
     syntaxString: 'syntaxString',
     syntaxType: 'syntaxType',
-    syntaxVariable: 'text',
+    // Variables keep fgBase #f8f8f2 while body text moves to textTui: the text
+    // anchor now paints copy, so identifiers reference the palette directly.
+    syntaxVariable: 'fgBase',
     text: 'text',
     textMuted: 'muted',
     warning: 'warning',
@@ -790,9 +829,11 @@ const PASS_THROUGH_PREFIX = 'passThrough';
 function isKnownAnchor(anchor) {
   return anchor in ANCHORS
     || anchor in PALETTE
+    || anchor in DECLARED_TUI_TOKENS
     || anchor in ALPHA_TOKENS
     || anchor in DERIVED_ALPHAS
-    || anchor === 'selectionTui';
+    || anchor === 'selectionTui'
+    || anchor === 'panelTui';
 }
 
 /**
@@ -839,8 +880,16 @@ function resolve(anchor, variant) {
     return hex;
   }
 
+  // OpenCode-only panel surface. Tier-keyed exact hexes, never chained:
+  // backgroundPanel + diffContextBg sit one lift below elevated per tier.
+  if (anchor === 'panelTui') {
+    const hex = PANEL_TUI[tier];
+    if (!hex) throw new Error(`unknown panel tier: ${tier}`);
+    return hex;
+  }
+
   if (anchor in ANCHORS) return resolveFlat(ANCHORS[anchor], tier);
-  if (anchor in PALETTE) return resolveFlat(anchor, tier);
+  if (anchor in PALETTE || anchor in DECLARED_TUI_TOKENS) return resolveFlat(anchor, tier);
 
   throw new Error(`unknown mapping target: ${anchor}`);
 }
