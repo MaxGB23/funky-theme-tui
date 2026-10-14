@@ -269,6 +269,29 @@ const DECLARED_PROVENANCE = {
   '#ffd18e': { step: 1, via: 'build.js darkerSyntaxAdjustments (palette.orangeAccent), darker tier only' },
 };
 
+/**
+ * Template-sourced declared values (NOT palette tokens, NOT chain-produced).
+ *
+ *   '#ff718f' — Gentleman-Cute vars.error (gentle-pi 4.2.0, upstream template
+ *   outside the repo). User-tested in terminals, TUI-only; VSCode keeps
+ *   errorFg #ff8282. Flat across tiers, like any other non-surface token.
+ *   Kept separate from DECLARED_PROVENANCE on purpose: that table must stay
+ *   chain-produced-or-syntax-adjusted, or it becomes a blank cheque.
+ */
+const DECLARED_TEMPLATE_VALUES = {
+  '#ff718f': { via: 'Gentleman-Cute vars.error (gentle-pi 4.2.0), TUI error — VSCode keeps errorFg' },
+};
+
+/**
+ * Pi-only user-tested selection flats (NOT palette tokens, NOT composites).
+ * Mirror of the builder's SELECTION_TUI — own copy on purpose, so builder drift
+ * fails here instead of passing unnoticed. Tier-keyed exact hexes, never chained.
+ */
+const SELECTION_TUI = {
+  dark: '#2b2a4a',
+  darker: '#23233f',
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -1183,14 +1206,27 @@ function checkCriterion1() {
           continue;
         }
         const diff = sameKeys(templates.pi[level], out[level]);
-        if (diff.missing.length || diff.extra.length) {
+        if (level === 'colors') {
+          // Exactly one declared extension beyond the template is legal.
+          const allowedExtra = Object.keys(ALLOWED_COLOR_EXTENSIONS);
+          const unexpectedMissing = diff.missing;
+          const unexpectedExtra = diff.extra.filter((k) => !allowedExtra.includes(k));
+          if (unexpectedMissing.length || unexpectedExtra.length) {
+            fail(check, `${key}/${level}: missing [${unexpectedMissing}] extra [${unexpectedExtra}]`);
+          }
+          for (const slot of allowedExtra) {
+            if (slot in (out[level] ?? {}) && out[level][slot] !== ALLOWED_COLOR_EXTENSIONS[slot]) {
+              fail(check, `${key}/${level}: extension "${slot}" is "${out[level][slot]}", expected "${ALLOWED_COLOR_EXTENSIONS[slot]}"`);
+            }
+          }
+        } else if (diff.missing.length || diff.extra.length) {
           fail(check, `${key}/${level}: missing [${diff.missing}] extra [${diff.extra}]`);
         }
       }
       if (out.export && Object.keys(out.export).length !== 3) {
         fail(check, `${key}/export has ${Object.keys(out.export).length} keys, expected 3`);
       } else {
-        pass(check, `${key}: vars ${Object.keys(out.vars ?? {}).length} / colors ${Object.keys(out.colors ?? {}).length} / export 3 — identical key sets to the gentle-pi 3.7.0 template`);
+        pass(check, `${key}: vars ${Object.keys(out.vars ?? {}).length} / colors ${Object.keys(out.colors ?? {}).length} / export 3 — template key sets plus ${Object.keys(ALLOWED_COLOR_EXTENSIONS).length} declared extension (${Object.entries(ALLOWED_COLOR_EXTENSIONS).map(([k, v]) => `${k}->${v}`).join(', ')})`);
       }
     }
   }
@@ -1284,8 +1320,10 @@ const SURFACE_SLOTS = {
     elevated: ['backgroundElement'],
   },
   pi: {
-    base: ['bg'],
-    deep: ['bgPanel', 'bgSubtle', 'toolPendingBg'],
+    // Pi mirrors OpenCode (approved): backgroundPanel == base, so bgPanel/bgSubtle/
+    // toolPendingBg sit on the base rung, not deep. Cards elevate via bgElement.
+    base: ['bg', 'bgPanel', 'bgSubtle', 'toolPendingBg'],
+    deep: [],
     elevated: ['bgElement', 'toolSuccessBg'],
   },
 };
@@ -1363,7 +1401,9 @@ function checkSurfaces() {
 }
 
 // Every slot whose value is an alpha composite. Spelled out here on purpose: this list is
-// the thing under test, so it cannot come from the build script.
+// the thing under test, so it cannot come from the build script. Pi `selection` is
+// deliberately ABSENT: it paints the user-tested SELECTION_TUI flats, checked by
+// checkSelectionTui below — leaving it here would demand a composite that must not exist.
 const ALPHA_SLOTS = [
   ['claude-code', 'selectionBg', 'accentSelection'],
   ['claude-code', 'userMessageBackgroundHover', 'hoverSurface'],
@@ -1375,7 +1415,6 @@ const ALPHA_SLOTS = [
   ['opencode', 'diffAddedLineNumberBg', 'diffAddedBg'],
   ['opencode', 'diffRemovedBg', 'diffRemovedBg'],
   ['opencode', 'diffRemovedLineNumberBg', 'diffRemovedBg'],
-  ['pi', 'selection', 'accentSelection'],
   ['pi', 'deepPink', 'searchBackground'],
   ['pi', 'infoBg', 'infoSurface'],
   ['pi', 'toolErrorBg', 'diffRemovedBg'],
@@ -1493,12 +1532,54 @@ function paletteTokenValue(token, tier) {
  *    just a set. A tier swap is caught by criterion-4-surfaces too; this catches it from the
  *    provenance side, where the mistake actually is.
  */
+/**
+ * Pi-only user-tested selection flats: pi `selection` must equal SELECTION_TUI
+ * for its own tier, and the two tiers must differ (no leak). Claude stays on
+ * the accentSelection wash and is covered by criterion-4-alpha, not here.
+ */
+function checkSelectionTui() {
+  const check = 'criterion-4-selection';
+  let verified = 0;
+  for (const variant of variantsFor('pi')) {
+    const value = slotsOf('pi', outputs[`pi/${variant.id}`])?.selection;
+    if (value === undefined) {
+      fail(check, `pi/${variant.id}.selection: missing, cannot verify the SELECTION_TUI flat`);
+      continue;
+    }
+    if (toHex(value) !== SELECTION_TUI[variant.tier]) {
+      fail(check, `pi/${variant.id}.selection = ${toHex(value)}, expected SELECTION_TUI ` +
+        `(${variant.tier}) = ${SELECTION_TUI[variant.tier]}`);
+    } else {
+      verified += 1;
+    }
+  }
+  const dark = SELECTION_TUI.dark;
+  const darker = SELECTION_TUI.darker;
+  if (dark === darker) fail(check, `SELECTION_TUI dark == darker (${dark}): tier flats must differ`);
+  if (verified === variantsFor('pi').length && dark !== darker) {
+    pass(check, `pi selection paints the user-tested flats (dark ${dark} / darker ${darker})`);
+  }
+}
+
 function checkValuesAccountedFor() {
   const check = 'criterion-4-accounting';
   const paletteHexes = Object.values(readPalette());
   if (paletteHexes.length !== 54) {
     fail(check, `expected 54 palette tokens in theme-config.js, parsed ${paletteHexes.length}`);
     return;
+  }
+
+  // Template-sourced declared values must be evidenced by the upstream template
+  // itself, or the table is a blank cheque (same discipline as above).
+  try {
+    const piTemplate = readFileSync(TEMPLATES.pi, 'utf8').toLowerCase();
+    for (const hex of Object.keys(DECLARED_TEMPLATE_VALUES)) {
+      if (!piTemplate.includes(hex)) {
+        fail(check, `DECLARED_TEMPLATE_VALUES lists ${hex} (${DECLARED_TEMPLATE_VALUES[hex].via}), but the upstream pi template does not contain it`);
+      }
+    }
+  } catch (error) {
+    fail(check, `cannot evidence DECLARED_TEMPLATE_VALUES against the pi template: ${error.message}`);
   }
 
   // Every declared entry must be chain-produced at the step it claims, or be a declared value of a
@@ -1540,6 +1621,11 @@ function checkValuesAccountedFor() {
     for (const [hex, entry] of Object.entries(DECLARED_PROVENANCE)) {
       if (entry.step <= TIER_STEP[tier]) allowed[tier].add(hex);
     }
+    // Template-sourced declared values: flat across tiers, evidenced by the
+    // upstream template itself (see DECLARED_TEMPLATE_VALUES).
+    for (const hex of Object.keys(DECLARED_TEMPLATE_VALUES)) allowed[tier].add(hex);
+    // Pi-only user-tested selection flat for exactly this tier (never chained).
+    allowed[tier].add(SELECTION_TUI[tier]);
   }
 
   for (const agent of Object.keys(TEMPLATES)) {
@@ -1567,9 +1653,10 @@ function checkValuesAccountedFor() {
     }
   }
   if (!failures.some((f) => f.startsWith(`[${check}]`))) {
-    pass(check, `every colour in every output is a palette token, a per-step composite, or one of the ` +
-      `${Object.keys(DECLARED_PROVENANCE).length} declared provenance values at or below its tier's step; ` +
-      `every declared value is chain-produced at the step it claims; the only "none" is opencode/background ` +
+    pass(check, `every colour in every output is a palette token, a per-step composite, one of the ` +
+      `${Object.keys(DECLARED_PROVENANCE).length} declared provenance values at or below its tier's step, or one of the ` +
+      `${Object.keys(DECLARED_TEMPLATE_VALUES).length} declared template-sourced values; ` +
+      `every chain-declared value is chain-produced at the step it claims; the only "none" is opencode/background ` +
       `in a transparent variant`);
   }
 }
@@ -1579,13 +1666,27 @@ function checkValuesAccountedFor() {
 // ---------------------------------------------------------------------------
 
 /**
- * D6: the single indirection edge the builder is allowed to re-point.
+ * D6: the declared indirection edges the builder is allowed to re-point, plus the
+ * one declared extension beyond the template's keyset.
  *
- * The validator holds its OWN copy instead of importing the builder's table, so a wider
- * override in the builder shows up here as drift rather than passing unnoticed. Only the slots
- * named below may differ from the template; every other edge must still be the template's.
+ * The validator holds its OWN copies instead of importing the builder's tables, so a wider
+ * override or extension in the builder shows up here as drift rather than passing unnoticed.
+ * Only the slots named below may differ from the template; every other edge must still be
+ * the template's, and only the extension key below may exist beyond it.
  */
-const ALLOWED_COLOR_OVERRIDES = { mdHeading: 'softRose' };
+const ALLOWED_COLOR_OVERRIDES = {
+  mdHeading: 'softRose',
+  accent: 'softRose',
+  border: 'accent',
+  scrollbarThumb: 'accent',
+  mdCode: 'mint',
+};
+
+/**
+ * Exactly one extra colors key beyond the upstream 55, with exactly this target.
+ * Upstream Gentleman-Cute 4.2.0 omits scrollbarTrack; the user-tested value is "bg".
+ */
+const ALLOWED_COLOR_EXTENSIONS = { scrollbarTrack: 'bg' };
 
 function checkCriterion6() {
   const check = 'criterion-6';
@@ -1608,9 +1709,10 @@ function checkCriterion6() {
       if (!varNames.has(value)) fail(check, `pi/${variant.id}/export/${slot} names "${value}", which is not a vars key`);
     }
 
-    // The expected graph is the template's, plus the declared D6 re-points. Anything else
-    // drifting is reported by slot so the failure is actionable rather than a bare "no".
-    const expected = { ...templates.pi.colors, ...ALLOWED_COLOR_OVERRIDES };
+    // The expected graph is the template's, plus the declared D6 re-points and the
+    // declared extension. Anything else drifting is reported by slot so the failure
+    // is actionable rather than a bare "no".
+    const expected = { ...templates.pi.colors, ...ALLOWED_COLOR_OVERRIDES, ...ALLOWED_COLOR_EXTENSIONS };
     const allSlots = new Set([...Object.keys(expected), ...Object.keys(out.colors ?? {})]);
     const drifted = [...allSlots].filter((slot) => out.colors?.[slot] !== expected[slot]);
 
@@ -1619,13 +1721,15 @@ function checkCriterion6() {
         .map((slot) => `${slot} -> ${out.colors?.[slot] ?? 'absent'} (expected ${expected[slot]})`)
         .join('; ');
       fail(check, `pi/${variant.id}/colors: ${drifted.length} slot(s) deviate from the expected graph; ` +
-        `only ${Object.keys(ALLOWED_COLOR_OVERRIDES).join(', ')} may be re-pointed. ${shown}` +
+        `only ${Object.keys(ALLOWED_COLOR_OVERRIDES).join(', ')} may be re-pointed plus extension ${Object.keys(ALLOWED_COLOR_EXTENSIONS).join(', ')}. ${shown}` +
         (drifted.length > 5 ? ` (+${drifted.length - 5} more)` : ''));
     } else {
       const rePoints = Object.keys(ALLOWED_COLOR_OVERRIDES).length;
+      const exts = Object.keys(ALLOWED_COLOR_EXTENSIONS).length;
       pass(check, `pi/${variant.id}: ${varNames.size} vars, ${Object.keys(out.colors).length} colors ` +
-        `indirections all resolving to a vars key, export 3, ${rePoints} declared re-point` +
-        (rePoints ? ` (${Object.entries(ALLOWED_COLOR_OVERRIDES).map(([k, v]) => `${k}->${v}`).join(', ')})` : ''));
+        `indirections all resolving to a vars key, export 3, ${rePoints} declared re-points` +
+        ` (${Object.entries(ALLOWED_COLOR_OVERRIDES).map(([k, v]) => `${k}->${v}`).join(', ')}) plus ${exts} extension` +
+        ` (${Object.entries(ALLOWED_COLOR_EXTENSIONS).map(([k, v]) => `${k}->${v}`).join(', ')})`);
     }
   }
 }
@@ -1659,8 +1763,8 @@ const TIER_LADDERS = {
     ['backgroundElement'],
   ],
   pi: [
-    ['bg'],
-    ['bgPanel'],
+    // Two rungs like OpenCode: [base+panel] vs [element]. bg==bgPanel is intentional.
+    ['bg', 'bgPanel'],
     ['bgElement'],
   ],
 };
@@ -2399,6 +2503,7 @@ checkCriterion3();
 checkSurfaces();
 checkAlphaPerVariant();
 checkDarkValuesNotLeaked();
+checkSelectionTui();
 checkValuesAccountedFor();
 checkCriterion6();
 checkSurfaceTiers();
