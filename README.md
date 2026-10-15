@@ -1,107 +1,152 @@
-# Funky Theme for your Favorite AI Agents 👻
+# Funky Theme for AI Coding Agents 👻
 
-Funky theme prototypes for AI coding agents: **Claude Code**, **OpenCode**, and **Pi**.
+> A vibrant, semantically-driven theme for **Claude Code**, **OpenCode**, and **Pi** — bringing Funky's color DNA to the terminal where you actually live.
 
-Generates 8 theme files from a single mapping table and 54 palette tokens. No
-dependencies, no build step, no `node_modules`.
+As terminal agents and AI handle more of the heavy lifting, you're spending less time writing in the IDE and more time *in the terminal* — reviewing output, reading diffs, watching agents work. Funky Theme for Terminals embraces that shift: same semantic palette, tuned for endurance without becoming boring.
 
-> **Status: prototype.** Palettes are still under visual review. The surface
-> ladder is an open decision, not a stable contract.
-> [`SOURCES.md`](SOURCES.md) tracks the rationale and provenance.
+**📦 Install from this repo** · **🧪 Prototype** — palettes under visual review, surface ladder still open. [`SOURCES.md`](SOURCES.md) tracks rationale and provenance.
 
-## The 4 Variants
+---
 
-| Variant | Claude Code | OpenCode | Pi |
-|---|---|---|---|
-| `dark` | ✅ | ✅ | ✅ |
-| `darker` | ✅ | ✅ | ✅ |
-| `dark-transparent` | ❌ | ✅ | ❌ |
-| `darker-transparent` | ❌ | ✅ | ❌ |
+## 📸 Preview
 
-`dark` and `darker` are **two steps of a three-step ladder**, not an arbitrary pair:
-`dark` uses the surface that previously belonged to `darker`, and `darker` becomes
-near-black.
+<!-- Add screenshots here -->
 
-| Step | base | deep | elevated |
-|---|---|---|---|
-| step 0 (reference, not shipped) | `#24212e` | `#211e2b` | `#2e2a3a` |
-| step 1 `dark` | `#181520` | `#121018` | `#201d2a` |
-| step 2 `darker` | `#0a0910` | `#060509` | `#13111a` |
+<p align="center"><strong>Funky Dark (Claude Code)</strong></p>
 
-The `-transparent` variants are identical to their solid counterparts **except for
-`background`**, which becomes `"none"`. Only OpenCode supports true transparency;
-Claude Code and Pi have no way to express it, so variants aren't generated for them
-rather than generating one that lies.
+<p align="center">
+  <img src="docs/images/claude-dark.png" alt="Funky Dark in Claude Code" width="75%">
+</p>
 
-## Install
+<p align="center"><strong>Funky Dark (OpenCode)</strong></p>
 
-Copy the `.json` to your terminal's theme directory and activate by name.
+<p align="center">
+  <img src="docs/images/opencode-darker.png" alt="Funky Darker in OpenCode" width="75%">
+</p>
 
-**Claude Code** — `~/.claude/themes/`
+<p align="center"><strong>Funky Dark (Pi / Gentle-Shell)</strong></p>
 
-```jsonc
-// ~/.claude/settings.json — the `custom:` prefix is required for custom themes
-{ "theme": "custom:funky-dark-prototype" }
+<p align="center">
+  <img src="docs/images/pi-dark.png" alt="Funky Dark in Pi" width="75%">
+</p>
+
+---
+
+## 🎨 Variants — Two depths, one palette
+
+Terminal developers read differently. Some want balanced contrast for long sessions, some want near-black for zero distraction. Two variants, same semantic mapping:
+
+| Variant | Canvas | Best for | Claude Code | OpenCode | Pi |
+|---|---|---|---|---|---|
+| **Funky Dark** | `#181520` (gray-mauve) | Balanced contrast, vivid semantics — the daily driver | ✅ | ✅ | ✅ |
+| **Funky Darker** | `#0a0910` (near-black) | Ultra-nocturnal, zero-distraction focus sessions | ✅ | ✅ | ✅ |
+
+**Transparent variants** (OpenCode only): identical semantics, `background: "none"` — inherits your terminal's bg. Claude Code and Pi can't express transparency, so no false variants are generated.
+
+> **Surface ladder** (reference): `step 0` `#24212e` → `step 1 (dark)` `#181520` → `step 2 (darker)` `#0a0910`. The editor's `Darker` becomes TUI `dark`; TUI `darker` pushes deeper.
+
+**8 files total**: 2 tiers × 3 agents + 2 transparent (OpenCode only).
+
+---
+
+## 🌈 Color Philosophy — Same DNA, Terminal Tuning
+
+Funky Theme is built around a **semantic, tiered color palette** — **54 tokens**, single source of truth. Every color has a name and a reason:
+
+- 🩷 **Pinks** — Tags, parameters, numeric constants
+- 🟣 **Purples** — Keywords, flow control (lighter purple)
+- 🩵 **Cyans** — Functions, regex punctuation, structural keywords (imports, `require`…)
+- 🔵 **Blues** — Methods, symbol operators, storage modifiers
+- 🟡 **Yellows** — Type names, attribute names (HTML, CSS, JSX)
+- 🟢 **Greens** — Strings, git untracked, inline code
+- 🔴 **Reds** — Errors, deleted refs
+- 🟠 **Oranges** — `new`/operators, auxiliary keywords (`extends`, `mod`…)
+
+**One shared canvas per variant.** Dark themes often default to deep blues — familiar but fatiguing. Funky uses a custom gray-mauve canvas (kinder to eyes at low brightness). Only `darker` goes deeper; the palette stays identical.
+
+| Canvas | Variant |
+|---|---|
+| `#181520` gray-mauve | Funky Dark |
+| `#0a0910` near-black | Funky Darker |
+
+**Terminal tuning** (vs. editor):
+- **Backgrounds darker** — terminal sessions run longer; deeper bases reduce glare
+- **Selective desaturation** — a handful of accents that hit hardest in streaming output have slightly lowered saturation. Not across the board; only where it reduces fatigue while keeping Funky identity intact
+- **Semantic mapping frozen** — pinks stay tags, purples stay keywords, cyans stay functions. The meaning of every color is identical to the editor theme.
+
+---
+
+## 💻 Agent Support
+
+Optimized for the workflows you actually run in the terminal:
+
+**Agents (tested daily)**
+- **OpenCode** — full support, solid + transparent variants
+- **Pi** — full support, uses your terminal bg for canvas
+- **Claude Code** — supported, `custom:` prefix required
+
+---
+
+## ⚙️ Terminal Integration Notes
+
+**Pi doesn't paint the canvas** — it uses your terminal's background. To match the chosen variant, set your profile bg to `#181520` (Dark) or `#0a0910` (Darker).
+
+**The assistant body in Pi uses your terminal's default foreground**, not the theme's `text` variable. If text looks gray/blueish in one terminal and fine in another, check that profile's fg and palette before the JSON.
+
+**OpenCode ships both solid and transparent variants** precisely to fit more users: the solid one paints the canvas (`background` with a color), the transparent one lets it pass through with `"background": "none"` and inherits your terminal's bg.
+
+**Recommended terminal font config** (Orca / Cascadia Code):
+```json
+{
+  "fontFamily": "Cascadia Code",
+  "fontSize": 17,
+  "fontWeight": 375,
+  "fontWeightBold": 425,
+  "lineHeight": 1.35
+}
 ```
+> Not bundled; falls back to system monospace if missing. These are the exact values the maintainer uses daily — adjust to taste.
 
-**OpenCode** — `~/.config/opencode/themes/`
+---
 
-```jsonc
-// ~/.config/opencode/opencode.json — bare name, no prefix
-{ "theme": "funky-dark-prototype" }
-```
+## 📦 Installation
 
-**Pi** — `~/.pi/agent/themes/`
+| Agent | Path | Config |
+|---|---|---|
+| **Claude Code** | `~/.claude/themes/` | `{ "theme": "custom:funky-dark-prototype" }` |
+| **OpenCode** | `~/.config/opencode/themes/` | `{ "theme": "funky-dark-prototype" }` |
+| **Pi** | `~/.pi/agent/themes/` | `{ "theme": "funky-dark-prototype" }` |
 
-```jsonc
-// ~/.pi/agent/settings.json — bare name, no prefix
-{ "theme": "funky-dark-prototype" }
-```
+1. Copy the `.json` for your variant to the agent's theme directory
+2. Add the config snippet to the agent's settings file
+3. Restart the agent
 
-## Your Terminal Is Also Part of the Theme
+> **Prototype note**: Theme names carry `-prototype` while palettes are under review. Stable names will drop the suffix.
 
-No theme lives in isolation: the emulator (Warp, Orca, Windows Terminal, whatever
-you use) contributes its own scheme — e.g., Tokyo Night, Dracula, Catppuccin — and
-its color overrides, and that tints what the agent doesn't paint.
+---
 
-- **Pi doesn't paint the canvas**: it uses your terminal's background. To match the
-  chosen variant, set your profile bg to `#181520` (dark) or `#0a0910` (darker).
-- **The assistant body in Pi uses your terminal's default foreground**, not the
-  theme's `text` variable. If text looks gray/blueish in one terminal and fine in
-  another, check that profile's fg and palette before the JSON.
-- **OpenCode ships both solid and transparent variants** precisely to fit more users:
-  the solid one paints the canvas (`background` with a color), the transparent one
-  lets it pass through with `"background": "none"` and inherits your terminal's bg.
-
-## Rebuild and Verify
+## 🔧 Rebuild & Verify
 
 ```bash
-node prototypes/build-prototypes.mjs       # emits the 8 JSONs from palette tokens
-node prototypes/validate-prototypes.mjs    # 39 checks on the artifacts
-node check-upstream.mjs                    # 28 provenance checks
+node prototypes/build-prototypes.mjs       # emits 8 JSONs from 54 palette tokens
+node prototypes/validate-prototypes.mjs    # 41 checks on generated artifacts
+node check-upstream.mjs                    # 28 provenance checks (read-only)
 ```
 
-The build is **deterministic**: running it again on a clean tree produces not a
-single byte of difference. That's what lets generated artifacts be versioned without
-verification depending on comparing them against a golden file.
+- **Deterministic build** — re-run on clean tree = zero byte diff. Generated artifacts versioned without golden-file comparison.
+- **`check-upstream.mjs`** — read-only drift detector. Verifies every registered artifact and Pi upstream file by SHA-256. Exits 1 on any failure. Never writes or deletes.
 
-`check-upstream.mjs` is a **read-only drift checker**: it reads `sources.json`,
-verifies every registered artifact and every Pi upstream file by SHA-256, and
-reports drift. It never writes or deletes anything, and exits with code 1 on any
-failure.
+---
 
-## What's in This Repo and What Isn't
+## 📂 What's in This Repo
 
-**Versioned:** generation and validation scripts, the palette, and the 8 generated
-JSONs.
+**Versioned**: generation/validation scripts (`prototypes/`), palette tokens, 8 generated JSONs.
 
-**Not versioned:** the base templates and the `Gentleman-Cute` theme the palette
-derives from. They belong to another project (`gentle-pi`) and live in its npm
-package; committing them would be unauthorized distribution of third-party material.
-`.gitignore` excludes them and `check-upstream.mjs` fails if any appear.
+**Not versioned**: base templates and `Gentleman-Cute` theme (palette source). They live in `gentle-pi` npm package; committing them would be unauthorized distribution. `.gitignore` excludes them; `check-upstream.mjs` fails if any appear.
 
-## Support and Testing
+---
 
-- **Claude Code** — the least thoroughly tested. It works, and is supported here, but visual coverage is narrower than the others.
-- **OpenCode & Pi** — heavily tested in daily use. All changes are verified against these two first, with Claude adjusted only where it already has the corresponding slot or a safe fallback.
-- **Full provenance** — [`SOURCES.md`](SOURCES.md) and [`sources.json`](sources.json), with a hash per excluded file so the exclusion stays auditable.
+## 🔗 Related
+
+- **Funky Theme (VS Code / Cursor / Zed / Antigravity)** → [maxgb23/funky-theme](https://github.com/maxgb23/funky-theme)
+- **Gentle AI (Pi agent harness)** → [gentle-pi](https://github.com/earendil-works/gentle-pi)
