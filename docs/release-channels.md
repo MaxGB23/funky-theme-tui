@@ -111,6 +111,18 @@ Supply-chain baseline (same for all npm publishes): trusted OIDC publishing over
 - [ ] TUI build is byte-deterministic, validator + upstream checker green, tarball contains only allowlisted files.
 - [ ] npm publish used trusted publishing + provenance; RCs went to `--tag next`, never `latest`.
 
+## Open checklist — project rules and release
+
+Pending definitions before the first `0.1.0`. Tracked here so they are not lost.
+
+- [ ] `AGENTS.md` rules for this repo (commit style, changelog flow, backport policy for the palette).
+- [ ] TUI release skill derived from the VS Code pattern: `0.x.x` stream, no VSIX step, changelog finalized before publish.
+- [ ] npm publish model: trusted OIDC publishing vs. manual publish with granular token + 2FA.
+- [ ] `package.json` contract: name, `files` allowlist, build/validate scripts, Node version.
+- [ ] CI scope: validation-only workflow mirroring `ci-build.yml` (no credentialed publish in CI).
+- [ ] Changelog flow: single `CHANGELOG.md` with per-agent entries, `[Unreleased]` discipline, English notes.
+- [ ] Propagation rules between `funky-theme` and `funky-theme-tui` when a key color changes.
+
 ## Next step
 
 Decide the TUI `0.1.0` scope (which of the 8 prototypes ship), then add `package.json` + `ci-validate.yml` + TUI release skill derived from the VS Code pattern without the VSIX step.
