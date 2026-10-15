@@ -1,10 +1,12 @@
 # Funky Theme for AI Coding Agents 👻
 
-> A vibrant, semantically-driven theme for **Claude Code**, **OpenCode**, and **Pi** — bringing Funky's color DNA to the terminal where you actually live.
+> A vibrant, semantically-driven theme for **Claude Code**, **OpenCode**, and **Pi/Gentle-Shell** — bringing Funky's color DNA to the terminal where you actually live.
 
 Agents answer in markdown. That *is* the surface you read — which is why this palette is deliberately a step calmer than the editor's. In the IDE, markdown is a minor surface and was tuned hot; in a terminal it is every line, at full size, for hours. Same families, fewer decibels, because you live here.
 
 **🧪 Prototype** — palettes under visual review. Theme files carry the `-prototype` suffix until the stable release drops it. [`SOURCES.md`](SOURCES.md) tracks provenance and rationale.
+
+> 🧩 **Looking for the IDE version?** Get Funky Theme for [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=MaxGB23.funky-theme-vscode) · [Open VSX](https://open-vsx.org/extension/MaxGB23/funky-theme-vscode) (Cursor, Antigravity VSCodium) · [Zed Extensions](https://zed.dev/extensions/funky-theme) · [Source Repo](https://github.com/maxgb23/funky-theme)
 
 ---
 
@@ -13,32 +15,42 @@ Agents answer in markdown. That *is* the surface you read — which is why this 
 <p align="center"><strong>Funky Dark — Pi (Gentle Shell)</strong></p>
 
 <p align="center">
-  <img src="public/images/gentle-shell-funky-dark.jpg" alt="Funky Dark in Pi (Gentle Shell)" width="85%">
+  <img src="public/images/gentle-shell-funky-dark.jpg" alt="Funky Dark in Pi (Gentle Shell)" width="95%">
 </p>
 
 <p align="center"><strong>Funky Dark — Pi (Gentle Shell, session)</strong></p>
 
 <p align="center">
-  <img src="public/images/gentle-shell-funky-dark-2.jpg" alt="Funky Dark in Pi (Gentle Shell, session view)" width="85%">
+  <img src="public/images/gentle-shell-funky-dark-2.jpg" alt="Funky Dark in Pi (Gentle Shell, session view)" width="95%">
 </p>
 
 <p align="center"><strong>Funky Dark — OpenCode</strong></p>
 
 <p align="center">
-  <img src="public/images/opencode-funky-dark.png" alt="Funky Dark in OpenCode" width="85%">
+  <img src="public/images/opencode-funky-dark.png" alt="Funky Dark in OpenCode" width="95%">
 </p>
 
 <p align="center"><strong>Funky Darker — OpenCode</strong></p>
 
 <p align="center">
-  <img src="public/images/opencode-funky-darker.png" alt="Funky Darker in OpenCode" width="85%">
+  <img src="public/images/opencode-funky-darker.png" alt="Funky Darker in OpenCode" width="95%">
 </p>
 
 <p align="center"><strong>Funky Dark — Claude Code</strong></p>
 
 <p align="center">
-  <img src="public/images/claude-code-funky-dark.png" alt="Funky Dark in Claude Code" width="85%">
+  <img src="public/images/claude-code-funky-dark.png" alt="Funky Dark in Claude Code" width="95%">
 </p>
+
+---
+
+## 💻 Agent Support
+
+Optimized for the workflows you actually run in the terminal:
+
+- **OpenCode** — full support, solid + transparent variants (tested daily). 50 keys: 14 markdown, 9 syntax, 12 diff, 15 chrome.
+- **Pi / Gentle-Shell** — full support, uses your terminal bg for canvas (tested daily). 59 slots (56 `colors` + 3 `export`) over a 27-entry `vars` palette — inside `colors`: 10 markdown, 9 syntax, 3 diff, 8 thinking, 4 identity, 22 chrome.
+- **Claude Code** — supported (`custom:` prefix required); tested in real sessions, though with less visual mileage than OpenCode and Pi. 72 slots, no markdown and no code keys.
 
 ---
 
@@ -59,6 +71,22 @@ Terminal developers read differently. Some want balanced contrast for long sessi
 
 ---
 
+## 📦 Installation
+
+| Agent | Path | Config |
+|---|---|---|
+| **Claude Code** | `~/.claude/themes/` | `{ "theme": "custom:funky-dark-prototype" }` |
+| **OpenCode** | `~/.config/opencode/themes/` | `{ "theme": "funky-dark-prototype" }` |
+| **Pi** | `~/.pi/agent/themes/` | `{ "theme": "funky-dark-prototype" }` |
+
+1. Copy the `.json` for your variant to the agent's theme directory
+2. Add the config snippet to the agent's settings file
+3. Restart the agent
+
+> **Prototype names**: the `-prototype` suffix keeps cleanup a single glob while palettes are under review. The stable release drops it.
+
+---
+
 ## 🌈 Color Philosophy — one palette, three vocabularies
 
 Funky's palette is **54 named tokens**, inherited from the editor theme. The TUI keeps those names and their hues, and declares the few extra values the editor has no token for:
@@ -70,7 +98,9 @@ Funky's palette is **54 named tokens**, inherited from the editor theme. The TUI
 | `commentTui` | `#8e8ea7` | Dim comment, between `muted` and `dim` |
 | `panelTui` / `selectionTui` | per tier | Surfaces the chain does not produce |
 
-**A family is a code role in the editor. In a terminal, a role is whatever the agent's vocabulary can spell — and each agent spells a different number of keys.**
+**In the IDE, Funky's philosophy is total visual clarity: dissecting complex code effortlessly across semantic families so everything is parsed at a glance—outperforming typical dark themes that blend into monochromatic mud.**
+
+**In terminals, there are no thousands of syntax tokens.** Terminal agents only expose a handful of keys (and mostly output markdown or minimal diffs). You cannot replicate IDE-level micro-tokenization here. Instead, our goal shifts: **cure the dull dark terminal.** We bring Funky's vibrant, high-contrast DNA to CLI workflows so long agent sessions remain energetic, readable, and alive—adapting our semantic families to whatever vocabulary each agent actually provides:
 
 | | Claude Code | Pi | OpenCode |
 |---|---|---|---|
@@ -165,51 +195,29 @@ The same role can land on a different hue in two agents, and that is by design: 
 
 ---
 
-## 💻 Agent Support
-
-Optimized for the workflows you actually run in the terminal:
-
-- **OpenCode** — full support, solid + transparent variants (tested daily). 50 keys: 14 markdown, 9 syntax, 12 diff, 15 chrome.
-- **Pi** — full support, uses your terminal bg for canvas (tested daily). 59 slots (56 `colors` + 3 `export`) over a 27-entry `vars` palette — inside `colors`: 10 markdown, 9 syntax, 3 diff, 8 thinking, 4 identity, 22 chrome.
-- **Claude Code** — supported (`custom:` prefix required); tested in real sessions, though with less visual mileage than OpenCode and Pi. 72 slots, no markdown and no code keys.
-
----
-
 ## ⚙️ Terminal Integration Notes
 
-**Pi doesn't paint the canvas** — it uses your terminal's background. To match the chosen variant, set your profile bg to `#181520` (Dark) or `#0a0910` (Darker).
+### Canvas & Background Recommendations
+* **Solid canvas in Pi (optional)**: **Pi doesn't paint the canvas natively** — it inherits your terminal's background. If you want a matching solid look, set your profile bg to `#181520` (Dark) or `#0a0910` (Darker). Power users with customized terminal colors, blur, or transparency can ignore this.
+* **Customizable OpenCode variants**: OpenCode ships both **solid** and **transparent** variants to adapt to any setup:
+  * *Solid*: Paints its own background explicitly (`background` with color).
+  * *Transparent* (`"background": "none"`): Passes through your terminal's background, ideal if you use blur, custom window opacity, or underlying terminal backgrounds.
 
-**The assistant body in Pi uses your terminal's default foreground**, not the theme's `text` variable. Pi's vocabulary has no markdown body-text slot — OpenCode has one, Pi does not. If text looks gray/blueish in one terminal and fine in another, check that profile's fg and palette before the JSON.
+### Foreground & Typography
+* **Pi text inheritance**: The assistant body in Pi uses your terminal's default foreground, not the theme's `text` variable (Pi's vocabulary lacks a markdown body-text slot, whereas OpenCode has one). If text looks off in one terminal vs another, check that profile's default foreground and ANSI palette.
+* **Terminal Font Configuration**:
+  > **Note**: These settings work on **any terminal emulator or IDE that supports font customization** (WezTerm, Ghostty, Alacritty, Kitty, Windows Terminal, Orca IDE, etc.). These are the exact values the maintainer uses daily in Orca IDE; feel free to adjust them to your personal taste:
 
-**OpenCode ships both solid and transparent variants** precisely to fit more users: the solid one paints the canvas (`background` with a color), the transparent one lets it pass through with `"background": "none"` and inherits your terminal's bg.
-
-**Recommended terminal font config** (Orca IDE):
-```json
-{
-  "fontFamily": "Cascadia Code",
-  "fontSize": 17,
-  "fontWeight": 375,
-  "fontWeightBold": 425,
-  "lineHeight": 1.35
-}
-```
-> Not bundled, falls back to system default font if missing. These are the exact values the maintainer uses daily, adjust to taste.
-
----
-
-## 📦 Installation
-
-| Agent | Path | Config |
-|---|---|---|
-| **Claude Code** | `~/.claude/themes/` | `{ "theme": "custom:funky-dark-prototype" }` |
-| **OpenCode** | `~/.config/opencode/themes/` | `{ "theme": "funky-dark-prototype" }` |
-| **Pi** | `~/.pi/agent/themes/` | `{ "theme": "funky-dark-prototype" }` |
-
-1. Copy the `.json` for your variant to the agent's theme directory
-2. Add the config snippet to the agent's settings file
-3. Restart the agent
-
-> **Prototype names**: the `-prototype` suffix keeps cleanup a single glob while palettes are under review. The stable release drops it.
+  ```json
+  {
+    "fontFamily": "Cascadia Code",
+    "fontSize": 17,
+    "fontWeight": 375,
+    "fontWeightBold": 425,
+    "lineHeight": 1.35
+  }
+  ```
+  > Not bundled, falls back to system default font if missing.
 
 ---
 
@@ -218,7 +226,7 @@ Optimized for the workflows you actually run in the terminal:
 ```bash
 node prototypes/build-prototypes.mjs       # emits 8 JSONs from 54 palette tokens
 node prototypes/validate-prototypes.mjs    # 41 checks on generated artifacts
-node check-upstream.mjs                    # 28 provenance checks (read-only)
+node scripts/check-upstream.mjs             # 28 provenance checks (read-only)
 ```
 
 - **Deterministic build** — re-run on clean tree = zero byte diff. Generated artifacts versioned without golden-file comparison.
@@ -230,11 +238,11 @@ node check-upstream.mjs                    # 28 provenance checks (read-only)
 
 **Versioned**: generation/validation scripts (`prototypes/`), palette tokens, 8 generated JSONs.
 
-**Not versioned**: base templates and `Gentleman-Cute` theme (palette source). They live in `gentle-pi` npm package; committing them would be unauthorized distribution. `.gitignore` excludes them; `check-upstream.mjs` fails if any appear.
+**Not versioned**: base templates and `Gentleman-Cute` theme (palette source). `Gentleman-Cute` is used as our reference baseline because it is the official theme of **Gentle-Shell**. If Gentle-Shell introduces any new theme keys upstream, `check-upstream.mjs` catches the non-byte-identical diffs so we can add support immediately. Under the hood, Gentle-Shell runs on **Pi**, which means vanilla Pi is inherently and fully supported. These upstream assets live in the `gentle-pi` npm package; committing them would be unauthorized distribution. `.gitignore` excludes them; `check-upstream.mjs` fails if any appear.
 
 ---
 
 ## 🔗 Related
-
-- **Funky Theme (VS Code / Cursor / Zed / Antigravity)** → [maxgb23/funky-theme](https://github.com/maxgb23/funky-theme)
-- **Gentle AI (Pi agent harness)** → [gentle-shell](https://github.com/Gentleman-Programming/gentle-shell)
+ 
+- **Funky Theme for IDEs** — [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=MaxGB23.funky-theme-vscode) · [Open VSX](https://open-vsx.org/extension/MaxGB23/funky-theme-vscode) (Cursor, Antigravity) · [Zed Extensions](https://zed.dev/extensions/funky-theme) · [GitHub Repo](https://github.com/maxgb23/funky-theme)
+- **Gentle Shell (Pi agent harness)** → [gentle-shell](https://github.com/Gentleman-Programming/gentle-shell)
