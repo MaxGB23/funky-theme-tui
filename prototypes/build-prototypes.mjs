@@ -152,11 +152,11 @@ const DECLARED_TUI_TOKENS = {
   // Neither hex is in the VSCode palette, so neither is asserted against
   // theme-config.js; both are allowlisted in the validator by exact value.
   commentTui: '#8e8ea7',
-  // emphTui #ffd18e — palette.orangeAccent (#ffd089) already adapted to the
+  // orangeTui #ffd18e — palette.orangeAccent (#ffd089) already adapted to the
   // darker tier by DARKER_SYNTAX, frozen here for BOTH tiers. Emphasis reads
   // orange like VSCode but softer, so long terminal sessions fatigue less.
   // Not in the VSCode palette as this hex; allowlisted in the validator.
-  emphTui: '#ffd18e',
+  orangeTui: '#ffd18e',
 };
 
 /**
@@ -174,6 +174,30 @@ const DECLARED_TUI_TOKENS = {
 const PANEL_TUI = {
   dark: '#1c1925',
   darker: '#0f0d15',
+};
+
+/**
+ * Added-diff background per tier, user-tested (NOT a palette token, NOT chained).
+ *
+ *   dark   #292740
+ *   darker #1d1c30
+ *
+ * The dark value is the wash the builder used to composite (accent 0x25 over
+ * step-1 base), kept as an exact hex so darker can move independently: #292740
+ * over the step-2 canvas reads washed-out, and #1d1c30 holds the same weight
+ * against near-black. Tier-keyed exact hexes, like PANEL_TUI — the chain is
+ * extended only where a link exists, and no link produces these, so they are
+ * declared, not walked.
+ *
+ * OpenCode's `border` shares this table on purpose — and it is the ONLY place
+ * it surfaces. Tested live with an intense #2e3: invisible everywhere else,
+ * it paints just the scrollbar, which in opencode is always visible and thick,
+ * so accent purple fatigues. The quiet diff-bg keeps the scroll normal.
+ * Pi keeps its thin overlay scroll (visible only while scrolling) on accent.
+ */
+const ADDED_BG_TUI = {
+  dark: '#292740',
+  darker: '#1d1c30',
 };
 
 /**
@@ -446,7 +470,7 @@ const ANCHORS = {
   subagentBlue: 'blueMethod',
   subagentCyan: 'cyanAccent',
   subagentGreen: 'greenBase',
-  subagentOrange: 'orangeBase',
+  subagentOrange: 'orangeTui',
   subagentPink: 'pinkVibrant',
   subagentPurple: 'purpleDim',
   subagentRed: 'redBase',
@@ -494,8 +518,8 @@ const MAPPING = {
     clawd_body: 'accentClaude',
     composerSidebarBackground: 'surfaceBase',
     cyan_FOR_SUBAGENTS_ONLY: 'subagentCyan',
-    diffAdded: 'diffAddedBg',
-    diffAddedDimmed: 'diffAddedBg',
+    diffAdded: 'addedBgTui',
+    diffAddedDimmed: 'addedBgTui',
     diffAddedWord: 'success',
     diffRemoved: 'diffRemovedBg',
     diffRemovedDimmed: 'diffRemovedBg',
@@ -528,8 +552,8 @@ const MAPPING = {
     rainbow_green_shimmer: 'greenBase',
     rainbow_indigo: 'rainbowIndigo',
     rainbow_indigo_shimmer: 'rainbowIndigo',
-    rainbow_orange: 'orangeBase',
-    rainbow_orange_shimmer: 'orangeBase',
+    rainbow_orange: 'orangeTui',
+    rainbow_orange_shimmer: 'orangeTui',
     rainbow_red: 'redBase',
     rainbow_red_shimmer: 'redBase',
     rainbow_violet: 'rainbowViolet',
@@ -556,7 +580,10 @@ const MAPPING = {
   // ---- OpenCode: 50 tokens, flat map under `theme`, every value #RRGGBB --------
   // User-tested draft (DRAFTS/funky-dark-prototype-opencode.json): markdown roles
   // follow their VSCode families (heading softRose, links/strong cyanAccent,
-  // listItem syntaxType, code/blockQuote success green), border reads as accent,
+  // listItem syntaxType, code/blockQuote success green), border shares the
+  // added-diff bg flats (ADDED_BG_TUI) so the scrollbar — the only place
+  // opencode border surfaces (tested: intense #2e3 invisible elsewhere) —
+  // reads quiet instead of accent,
   // comments dim to commentTui, keyword/number/punctuation take their named
   // palette tokens, variables keep fgBase while body text moves to textTui, and
   // the panel surface (backgroundPanel + diffContextBg) sits one lift below
@@ -573,12 +600,12 @@ const MAPPING = {
     background: 'passThrough:surfaceBase',
     backgroundElement: 'surfaceElevated',
     backgroundPanel: 'panelTui',
-    border: 'accent',
+    border: 'addedBgTui',
     borderActive: 'accentBright',
     borderSubtle: 'borderSubtle',
     diffAdded: 'success',
-    diffAddedBg: 'diffAddedBg',
-    diffAddedLineNumberBg: 'diffAddedBg',
+    diffAddedBg: 'addedBgTui',
+    diffAddedLineNumberBg: 'addedBgTui',
     diffContext: 'dim',
     diffContextBg: 'panelTui',
     diffHighlightAdded: 'success',
@@ -595,7 +622,7 @@ const MAPPING = {
     // Code-block base keeps fgBase while body copy moves to textTui: same
     // variables-vs-copy split as syntaxVariable.
     markdownCodeBlock: 'fgBase',
-    markdownEmph: 'emphTui',
+    markdownEmph: 'orangeTui',
     markdownHeading: 'soft',
     markdownHorizontalRule: 'borderSubtle',
     markdownImage: 'accent',
@@ -858,7 +885,8 @@ function isKnownAnchor(anchor) {
     || anchor in ALPHA_TOKENS
     || anchor in DERIVED_ALPHAS
     || anchor === 'selectionTui'
-    || anchor === 'panelTui';
+    || anchor === 'panelTui'
+    || anchor === 'addedBgTui';
 }
 
 /**
@@ -910,6 +938,16 @@ function resolve(anchor, variant) {
   if (anchor === 'panelTui') {
     const hex = PANEL_TUI[tier];
     if (!hex) throw new Error(`unknown panel tier: ${tier}`);
+    return hex;
+  }
+
+  // Added-diff background flats, shared by opencode border (its only surface
+  // is the always-visible thick scrollbar, tested with intense #2e3).
+  // Tier-keyed exact hexes, never chained: dark keeps the old wash hex, darker
+  // holds #1d1c30 against near-black. Claude's diffAdded slots ride the same table.
+  if (anchor === 'addedBgTui') {
+    const hex = ADDED_BG_TUI[tier];
+    if (!hex) throw new Error(`unknown added-bg tier: ${tier}`);
     return hex;
   }
 
