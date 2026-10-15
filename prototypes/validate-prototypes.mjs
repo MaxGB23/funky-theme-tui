@@ -2318,15 +2318,17 @@ function checkInfoSurfaceIdentity() {
  * semantic-heading-family: Pi's markdown heading must not inherit its syntax-type colour.
  *
  * D6 re-points `pi/colors/mdHeading` off `champagne`, because Pi bundles 6 roles onto that
- * one var and the heading was rendering yellow while OpenCode rendered it pink. `softRose`
- * holds pinkLight #ffa8e6, the only pink-family value in Pi's fixed 26-var key set.
+ * one var and the heading was rendering yellow while every other agent rendered it pink.
+ * `softRose` holds pinkLight #ffa8e6, the only pink-family value in the template's fixed
+ * 27-var key set.
  *
  * The assertion is DIRECTION of improvement, not hex equality: the emitted Pi heading must be
- * strictly nearer the OpenCode heading than the syntax-type colour it replaced was. Exact
- * parity with OpenCode's #ff8ddb is impossible without adding a `pinkVibrant` var the
- * template does not have, so demanding equality would be demanding an illegal key. Comparing
- * distances accepts the known tone difference while still failing any change that moves the
- * heading away from the reference.
+ * strictly nearer the OpenCode heading than the syntax-type colour it replaced was. The
+ * editor's brighter heading, pinkVibrant #ff8ddb, would require a `pinkVibrant` var the
+ * template does not have -- but that is no longer the gap, because OpenCode's `markdownHeading`
+ * resolves to the same pinkLight #ffa8e6 Pi now emits. Distance comparison is kept anyway: it
+ * is what fails any future change that moves the heading away from the reference, and it says
+ * nothing about which of the two agents a future re-point should follow.
  */
 function checkHeadingFamily() {
   const check = 'semantic-heading-family';
