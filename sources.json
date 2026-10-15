@@ -2,7 +2,7 @@
     "$comment":  "Fingerprints of our artifacts and of any real upstream. Paths are POSIX-style with forward slashes except the windowsLocalPrefix field. Run: node check-upstream.mjs",
     "$commentKinds":  "THREE KINDS OF FILE, and the distinction is load-bearing. 'artifacts' (under agents) are theme files, installable and ours. 'buildInputs' are files the build READS, and their absence is a FAILURE. 'excludedFromBuild' are files the build does not read and will never read, kept on disk as EVIDENCE: their absence is the expected end state, not a broken dependency. A reader must never take an excluded reference for something required.",
     "$commentPresence":  "PRESENCE, REQUIRED-NESS and COMMITTED-NESS are three separate facts, and this manifest keeps them apart on purpose. A file can be absent from a clone and still be required (a build input). A file can be present on disk and still not be committed (an excluded reference: kept locally, hash-pinned here, excluded by .gitignore). And an artifact's 'installed' flag describes the USER'S LIVE MACHINE, never this clone. The checker derives none of these from each other: the installed row is read from installPath and never from repoPath, so a clone that lacks a vendored file can never contradict installed:true.",
-    "updated":  "2026-09-27",
+    "updated":  "2026-10-15",
     "buildInputs":  [
                        {
                            "kind":  "build-input",
@@ -31,8 +31,8 @@
                            "agent":  "pi",
                            "path":  "~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json",
                            "required":  true,
-                           "purpose":  "The real gentle-pi 3.7.0 upstream template, read from OUTSIDE the repo. Deliberately not stubbed: it is genuine upstream, its hash lives in agents.pi.upstreamFiles, and D8 left it exactly where it was.",
-                           "provenance":  "upstream - gentle-pi 3.7.0, volatile npm path",
+                           "purpose":  "The real gentle-pi 4.2.0 upstream template, read from OUTSIDE the repo. Deliberately not stubbed: it is genuine upstream, its hash lives in agents.pi.upstreamFiles, and D8 left it exactly where it was.",
+                           "provenance":  "upstream - gentle-pi 4.2.0, volatile npm path",
                            "hashRecordedIn":  "agents.pi.upstreamFiles[1]"
                        }
                    ],
@@ -89,24 +89,24 @@
                                   "kind":  "excluded-reference",
                                   "agent":  "pi",
                                   "path":  "material-trabajo/pi/Gentleman-Cute.json",
-                                  "bytes":  2435,
-                                  "sha256":  "f1b89b56e9db3ba481f77b7e4f7f35f2693ba2c72b1c563029bf05c22d16ea77",
+                                  "bytes":  2671,
+                                  "sha256":  "2f5da2b8fa21abf99dd0774e35c8369af4e57cca7bb2a3016870f756322d97a2",
                                   "required":  false,
                                   "committed":  false,
                                   "replacedBy":  "~/.pi/agent/npm/node_modules/gentle-pi/themes/Gentleman-Cute.json",
-                                  "replacedByNote":  "The LIVE upstream copy, which is what the build actually reads (buildInputs[2]). This repo file is a hand-copied STALE GENERATION of the same theme - see the provenance note in agents.pi.artifacts - so it is kept as evidence of what upstream used to look like, and the build deliberately does not read it.",
-                                  "excludedBecause":  "Vendored base template from another project, and in this case a stale copy of it. Kept on disk, hash-pinned here, never committed (see .gitignore)."
+                                  "replacedByNote":  "The LIVE upstream copy, which is what the build actually reads (buildInputs[2]). The on-disk reference file was refreshed to 4.2.0 sometime after 2026-09-27: verified 2026-10-15 byte-identical (2671 bytes) to the live upstream file, so it is a fresh copy now, not the stale generation it used to be. The build deliberately does not read it either way.",
+                                  "excludedBecause":  "Vendored base template from another project. Verified 2026-10-15 byte-identical (2671 bytes) to the live upstream Gentleman-Cute.json 4.2.0 — it used to be a stale generation, see SOURCES.md history. Kept on disk, hash-pinned here, never committed (see .gitignore)."
                               },
                               {
                                   "kind":  "excluded-reference",
                                   "agent":  "pi",
                                   "path":  "material-trabajo/pi/Gentleman.json",
-                                  "bytes":  2629,
-                                  "sha256":  "7c3b8c584585955f4fa82fda7aa1c70776d957e9e17a4da788d3e0b46a71844d",
+                                  "bytes":  2876,
+                                  "sha256":  "1e9df0b1680c0c82aa44edebae5033f8f5d045cc4f20fe6a98ca6b469eef8aa5",
                                   "required":  false,
                                   "committed":  false,
                                   "replacedBy":  null,
-                                  "replacedByNote":  "Nothing. Upstream gentle-pi ships Gentle.json, not Gentleman.json, so there is no upstream file it stands in for, and the prototypes build never read it. A null here is a fact, not a gap.",
+                                  "replacedByNote":  "Content-verified 2026-10-15: the on-disk file is byte-identical (2876 bytes) to upstream Gentle.json 4.2.0 under a different filename, so unlike before it now stands in for a real upstream file. The prototypes build never read it.",
                                   "excludedBecause":  "Vendored base template from another project, the same category as the two entries above. Kept on disk, hash-pinned here, never committed (see .gitignore). Nothing in the pipeline reads it."
                               }
                           ],
@@ -193,13 +193,13 @@
                               "upstream":  {
                                                "kind":  "npm",
                                                "package":  "gentle-pi",
-                                               "version":  "3.7.0",
+                                               "version":  "4.2.0",
                                                "repo":  "https://github.com/Gentleman-Programming/gentle-shell",
                                                "path":  "~/.pi/agent/npm/node_modules/gentle-pi/themes",
                                                "packageJson":  "~/.pi/agent/npm/node_modules/gentle-pi/package.json",
                                                "volatile":  true,
                                                "note":  "Lives inside node_modules, so \u0027npm update gentle-pi\u0027 silently replaces it. The durable citation is the git URL plus tag, not this path. The postinstall script (scripts/install-gentle-ai.mjs) contains no theme logic and never writes to ~/.pi/agent/themes, so an update will not clobber our installed themes.",
-                                               "versionNote":  "The manifest previously said 3.3.0, which was stale. Verified 3.7.0 on disk at ~/.pi/agent/npm/node_modules/gentle-pi/package.json on 2026-09-27. The upstreamFiles hashes below are all 3.7.0."
+                                               "versionNote":  "Re-pinned 2026-10-15: 3.7.0 -> 4.2.0. Verified 4.2.0 on disk at ~/.pi/agent/npm/node_modules/gentle-pi/package.json (mtime 2026-10-13). The upstreamFiles hashes below are all 4.2.0. Previously 3.3.0 -> 3.7.0 on 2026-09-27; see SOURCES.md."
                                            },
                               "installDir":  "~/.pi/agent/themes",
                               "installDirExists":  true,
@@ -235,8 +235,8 @@
                                                     "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
                                                     "installPath":  "~/.pi/agent/themes/Gentleman.json",
                                                     "installed":  true,
-                                                    "sha256":  "7c3b8c584585955f4fa82fda7aa1c70776d957e9e17a4da788d3e0b46a71844d",
-                                                    "provenance":  "unknown / not verified - there is no upstream Gentleman.json (upstream ships Gentle.json), so this file is a renamed derivative of unknown origin"
+                                                    "sha256":  "1e9df0b1680c0c82aa44edebae5033f8f5d045cc4f20fe6a98ca6b469eef8aa5",
+                                                    "provenance":  "Content-verified 2026-10-15: byte-identical (2876 bytes) to upstream Gentle.json 4.2.0 under the Gentleman.json filename. Previously a renamed derivative of unknown origin; the refresh to upstream content happened on disk sometime after 2026-09-27."
                                                 },
                                                 {
                                                     "slug":  "Gentleman-Cute",
@@ -244,26 +244,26 @@
                                                     "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
                                                     "installPath":  "~/.pi/agent/themes/Gentleman-Cute.json",
                                                     "installed":  false,
-                                                    "sha256":  "f1b89b56e9db3ba481f77b7e4f7f35f2693ba2c72b1c563029bf05c22d16ea77",
-                                                    "provenance":  "STALE UPSTREAM GENERATION, not our work - an older generation of the upstream theme itself, hand-copied before gentle-pi 3.7.0 landed. Its vars still use the previous generation\u0027s functional slot names (panel, element, success, info, heading, code, synFunction, synOperator, addBg, removeBg, accentBright), which upstream no longer ships. Only two values differ from current upstream: border #342230 to #563040 and borderSubtle #241822 to #2A1720.",
+                                                    "sha256":  "2f5da2b8fa21abf99dd0774e35c8369af4e57cca7bb2a3016870f756322d97a2",
+                                                    "provenance":  "Refreshed on disk to upstream 4.2.0: verified 2026-10-15 byte-identical (2671 bytes) to the live upstream Gentleman-Cute.json. Previously a STALE UPSTREAM GENERATION hand-copied before 3.7.0 (functional slot names panel/element/success/info/heading/code/synFunction/synOperator/addBg/removeBg/accentBright); that description no longer applies.",
                                                     "installNote":  "Deleted 2026-09-27 from ~/.pi/agent/themes/ on purpose, so the maintained upstream copy is the only Gentleman-Cute in Pi\u0027s search path. installed:false is the CORRECT steady state here, not drift. A checker run reporting this as MISSING is reporting the intended state."
                                                 }
                                             ],
                               "upstreamFiles":  [
                                                     {
                                                         "name":  "Gentle.json",
-                                                        "bytes":  2840,
-                                                        "sha256":  "64bf2f75deacbfec18db0d5814107c5d2eb6f42839cbc5221455aedc63a9c2e1"
+                                                        "bytes":  2876,
+                                                        "sha256":  "1e9df0b1680c0c82aa44edebae5033f8f5d045cc4f20fe6a98ca6b469eef8aa5"
                                                     },
                                                     {
                                                         "name":  "Gentleman-Cute.json",
-                                                        "bytes":  2635,
-                                                        "sha256":  "8bcdcb7e21463ac562b4fbf64513ddddc7bf732730df87cc65d6720c5374d72b"
+                                                        "bytes":  2671,
+                                                        "sha256":  "2f5da2b8fa21abf99dd0774e35c8369af4e57cca7bb2a3016870f756322d97a2"
                                                     },
                                                     {
                                                         "name":  "Gentleman-Sexy.json",
-                                                        "bytes":  2615,
-                                                        "sha256":  "f1e97ab82b38c6753c8871e950c466f6fbf2304fe7931e5681cb3cf0439c5f75"
+                                                        "bytes":  2651,
+                                                        "sha256":  "145be85539f26397817628894b34de80c5c7ce4fb43bf36d42734bed1982076c"
                                                     }
                                                 ]
                           }

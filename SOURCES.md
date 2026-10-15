@@ -21,9 +21,15 @@ OpenCode themes are entirely our own work.
 > The **hashes in this document were always correct.** What was wrong was the *paths*: the
 > manifest pointed at the pre-`material-trabajo` locations, so the checker reported 6 spurious
 > `MISSING` rows and this document carried a false "the artifacts are gone" section. Both are
-> fixed as of 2026-09-27. `node check-upstream.mjs` is green — currently **28 ok, 0 warnings,
-> 0 failures** (19 → 24 when D8 added the prototype build's own inputs, 24 → 28 when the vendored
-> base templates were reclassified as excluded references). See *Resolved: the spurious MISSING
+> fixed as of 2026-09-27. After the 2026-10-15 re-pin to `gentle-pi` 4.2.0,
+> `node check-upstream.mjs` reports **25 ok, 2 warnings, 1 failure** (19 → 24 when D8 added the
+> prototype build's own inputs, 24 → 28 when the vendored base templates were reclassified as
+> excluded references). The 2 warnings are the user's live-test files in `~/.claude/themes/`
+> (`gentleman`, `gentleman-cute` — the manifest says not installed and the files exist, which is
+> correct for tests). The 1 failure is `Gentleman installed MISSING`:
+> `~/.pi/agent/themes/Gentleman.json` is gone from the live machine while the manifest still says
+> `installed:true` — if the delete was deliberate the flag should flip to `false`, otherwise the
+> file should be restored. Every hash the manifest pins verifies; nothing hashed drifts. See *Resolved: the spurious MISSING
 > reports* and *D8* below.
 >
 > **Those six files are IGNORED, not deleted.** They stay on disk. `.gitignore` keeps them out of
@@ -143,7 +149,7 @@ Both themes are installed and **byte-identical to our `material-trabajo\opencode
 | Installed themes | `~\.pi\agent\themes\` (exists) |
 | Settings | `~\.pi\agent\settings.json` -> `"theme": "funky-dark-prototype"` (was `Gentleman-Cute` until 2026-09-27 07:15, changed by the user) |
 | Packages | includes `npm:gentle-pi` |
-| Upstream | **yes** — `gentle-pi` `3.7.0` |
+| Upstream | **yes** — `gentle-pi` `4.2.0` |
 
 ### Upstream — VOLATILE
 
@@ -154,21 +160,33 @@ Both themes are installed and **byte-identical to our `material-trabajo\opencode
 | Field | Value |
 | --- | --- |
 | Package | `gentle-pi` |
-| Version on disk | `3.7.0` |
+| Version on disk | `4.2.0` |
 | Repository | `git+https://github.com/Gentleman-Programming/gentle-shell.git` |
 | Themes path | `~\.pi\agent\npm\node_modules\gentle-pi\themes\` |
 | Ships via | the package `files` field includes `themes/` |
 | Loaded by | `settings.json` -> `"packages": ["npm:gentle-pi", ...]` plus `gentle-shell`'s explicit `--theme <packageRoot>/themes` |
 
-Upstream files present on disk (mtime 2026-09-27, installed with `gentle-pi` 3.7.0):
+Upstream files present on disk (mtime 2026-10-13, installed with `gentle-pi` 4.2.0):
 
 | File | Bytes | SHA256 (first 16) |
 | --- | --- | --- |
-| `Gentle.json` | 2840 | `64BF2F75DEACBFEC` |
-| `Gentleman-Cute.json` | 2635 | `8BCDCB7E21463AC5` |
-| `Gentleman-Sexy.json` | 2615 | `F1E97AB82B38C675` |
+| `Gentle.json` | 2876 | `1E9DF0B1680C0C82` |
+| `Gentleman-Cute.json` | 2671 | `2F5DA2B8FA21ABF9` |
+| `Gentleman-Sexy.json` | 2651 | `145BE85539F26397` |
 
-`gentle-pi`'s postinstall script (`scripts/install-gentle-ai.mjs`) contains no theme logic — it
+> Re-pinned 2026-10-15: `gentle-pi` 3.7.0 → **4.2.0** (on-disk truth at `package.json`,
+> mtime 2026-10-13). All three rows above are 4.2.0, and so are the two `material-trabajo\pi\`
+> reference copies, which were refreshed on disk to byte-identical 4.2.0 content sometime after
+> 2026-09-27. The detection logic is unchanged and lives in `check-upstream.mjs`: every file under
+> `agents.pi.upstreamFiles` is hashed with SHA-256 on each run and compared against the manifest
+> (`DRIFT` on mismatch), the on-disk `package.json` version is compared against
+> `agents.pi.upstream.version` (`VERSION DRIFT`), and the Pi build input (`Gentleman-Cute.json`,
+> read live from `node_modules`) resolves its expected hash through
+> `hashRecordedIn: agents.pi.upstreamFiles[1]` — so an upstream change fails loudly here before it
+> can silently flow into the emitted Pi prototypes. This bump, notably, changed zero bytes
+> downstream: all 8 emitted prototypes rebuilt byte-identical.
+>
+> `gentle-pi`'s postinstall script (`scripts/install-gentle-ai.mjs`) contains no theme logic — it
 never writes to `~/.pi/agent/themes/`. A package update **will not** restore the deleted
 `Gentleman-Cute.json` there; it **will** replace these reference copies.
 
@@ -191,7 +209,8 @@ Top-level keys `$schema`, `name`, `vars`, `colors`, `export`:
 - `vars` — the hex palette. Entry count varies per file: 19 to 36. Example entries:
   `bg=#060407`, `bgPanel=#100A0F`, `bgElement=#100A0F`, `bgSubtle=#100A0F`.
 
-> **Correction — the elevation ladder is 2 steps, not 3.** In `gentle-pi` 3.7.0 `bgPanel`,
+> **Correction — the elevation ladder is 2 steps, not 3.** In `gentle-pi` 4.2.0
+> (re-verified on disk 2026-10-15; identical in 3.7.0) `bgPanel`,
 > `bgElement` **and** `bgSubtle` are all `#100A0F`; only `bg` `#060407` differs. So Gentleman-Cute
 > offers exactly **one** usable elevation shift, and `bgSubtle` is a misleading name because it
 > equals `bgPanel`. Any plan that needs a second surface level has to invent it. By contrast Gentle
@@ -272,8 +291,8 @@ re-colored**.
 | Claude Code | `material-trabajo\claude-code\gentleman-cute.json` | ours | no upstream exists |
 | OpenCode | `material-trabajo\opencode\gentleman.json` | ours | no upstream exists |
 | OpenCode | `material-trabajo\opencode\gentleman-cute.json` | ours | no upstream exists |
-| Pi | `material-trabajo\pi\Gentleman.json` | ours | renamed derivative, **origin unverified** |
-| Pi | `material-trabajo\pi\Gentleman-Cute.json` | **stale upstream generation** | was a collision, not our work |
+| Pi | `material-trabajo\pi\Gentleman.json` | ours | byte-identical to upstream `Gentle` 4.2.0 |
+| Pi | `material-trabajo\pi\Gentleman-Cute.json` | fresh 4.2.0 copy | was a collision, not our work |
 | Pi | `gentle-pi/themes/Gentle.json` | upstream | yes |
 | Pi | `gentle-pi/themes/Gentleman-Cute.json` | upstream | yes — **this is what Pi rendered until 2026-09-27 07:15; since then Pi renders `funky-dark-prototype`** |
 | Pi | `gentle-pi/themes/Gentleman-Sexy.json` | upstream | yes |
@@ -344,8 +363,8 @@ dependency on them is gone** — replaced by structural stubs that live in the r
 | Excluded reference | `material-trabajo\opencode\gentleman-cute.json` | 1660 | `b681e9860137bb48` |
 | Excluded reference | `material-trabajo\claude-code\gentleman.json` | 3105 | `ed90d7af3c097dbb` |
 | Excluded reference | `material-trabajo\opencode\gentleman.json` | 1660 | `1f09532ac91b066a` |
-| Excluded reference | `material-trabajo\pi\Gentleman-Cute.json` | 2435 | `f1b89b56e9db3ba4` |
-| Excluded reference | `material-trabajo\pi\Gentleman.json` | 2629 | `7c3b8c584585955f` |
+| Excluded reference | `material-trabajo\pi\Gentleman-Cute.json` | 2671 | `2F5DA2B8FA21ABF9` |
+| Excluded reference | `material-trabajo\pi\Gentleman.json` | 2876 | `1E9DF0B1680C0C82` |
 
 **What a stub is.** Derived from the real template by walking the parsed JSON and replacing every
 *colour literal* with a sentinel. Every key, every nesting level, every array length and every
