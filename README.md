@@ -100,6 +100,8 @@ derives from. They belong to another project (`gentle-pi`) and live in its npm
 package; committing them would be unauthorized distribution of third-party material.
 `.gitignore` excludes them and `check-upstream.mjs` fails if any appear.
 
-Full provenance is in [`SOURCES.md`](SOURCES.md) and
-[`sources.json`](sources.json), with a hash per excluded file so the exclusion
-stays auditable.
+## Support and Testing
+
+- **Claude Code** — the least thoroughly tested. It works, and is supported here, but visual coverage is narrower than the others.
+- **OpenCode & Pi** — heavily tested in daily use. All changes are verified against these two first, with Claude adjusted only where it already has the corresponding slot or a safe fallback.
+- **Full provenance** — [`SOURCES.md`](SOURCES.md) and [`sources.json`](sources.json), with a hash per excluded file so the exclusion stays auditable.
