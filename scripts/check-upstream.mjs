@@ -2,7 +2,7 @@
 /**
  * check-upstream.mjs — read-only drift checker for the Gentleman theme sources.
  *
- * Reads sources.json from its own directory (so cwd does not matter), verifies every recorded
+ * Reads sources.json from the repo root (so cwd does not matter), verifies every recorded
  * artifact and Pi upstream file by SHA-256, and reports drift.
  *
  * Strictly read-only: it never creates, modifies, or deletes any file, and never throws on a
@@ -18,7 +18,9 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
-const MANIFEST = join(SELF_DIR, "sources.json");
+const MANIFEST = join(SELF_DIR, "..", "sources.json");
+/** Relative manifest paths resolve against the manifest, never the script. */
+const MANIFEST_DIR = dirname(MANIFEST);
 
 /** Severity levels. */
 const OK = "ok";
@@ -48,8 +50,9 @@ const fatal = (message) => {
 /**
  * Resolve a path from the manifest.
  *
- * `~` expands to the user home. Relative paths resolve against THIS SCRIPT'S directory, never
- * against process.cwd(), so results are identical no matter where the checker is invoked from.
+ * `~` expands to the user home. Relative paths resolve against THE MANIFEST'S directory, never
+ * against process.cwd() and never against this script's directory, so results are identical no
+ * matter where the checker is invoked from.
  * Absolute paths are used as-is. Separators are normalized to forward slashes.
  */
 function resolvePath(p) {
@@ -57,7 +60,7 @@ function resolvePath(p) {
   let out;
   if (p.startsWith("~/")) out = join(homedir(), p.slice(2));
   else if (isAbsolute(p)) out = p;
-  else out = join(SELF_DIR, p);
+  else out = join(MANIFEST_DIR, p);
   return out.replace(/\\/g, "/");
 }
 

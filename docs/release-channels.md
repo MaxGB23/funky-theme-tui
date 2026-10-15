@@ -76,7 +76,7 @@ Current state: 8 deterministic prototypes, zero deps, no `package.json`, no CI. 
 ```bash
 node prototypes/build-prototypes.mjs
 node prototypes/validate-prototypes.mjs   # 39 checks
-node check-upstream.mjs                   # 28 checks, read-only
+node scripts/check-upstream.mjs                   # 28 checks, read-only
 npm stage publish   # staged flow; a maintainer approves with 2FA (see supply-chain baseline)
 ```
 
@@ -98,7 +98,7 @@ Proposed `package.json` (corrected — the `pi` manifest key and `repository.url
   "pi": { "themes": ["./themes/*.json"] },
   "scripts": {
     "build": "node prototypes/build-prototypes.mjs",
-    "validate": "node prototypes/validate-prototypes.mjs && node check-upstream.mjs",
+    "validate": "node prototypes/validate-prototypes.mjs && node scripts/check-upstream.mjs",
     "prepack": "npm run build && npm run validate"
   }
 }
@@ -134,6 +134,25 @@ Pending definitions before the first `0.1.0`. Tracked here so they are not lost.
 - [ ] CI scope: validation-only `ci-validate.yml` mirroring `ci-build.yml` (no credentialed publish in CI — confirmed by the manual-model decision).
 - [ ] Changelog flow: this repo gets its own `CHANGELOG.md` for TUI (VS Code/Zed changelogs live in their repos — a cross-repo single CHANGELOG is impossible with separate repos). `[Unreleased]` discipline, English notes.
 - [ ] Propagation rules between `funky-theme` and `funky-theme-tui` when a key color changes.
+
+## Plan / sequencing
+
+Decided 2026-10-15: local order work first, release track after. New folders are created by the
+work that needs them — nothing speculative, nothing orphaned in root.
+
+Phase 1 — in tree 2026-10-15 (reorg committed as `13958eb`; layout moves + freeze + AGENTS.md
+rules staged for commit): `upstream/` + `inbox/`, Gentleman retired, `scripts/` + `docs/`,
+`SOURCES.md` frozen, rules written.
+Phase 2 — release track, in this order:
+1. `CHANGELOG.md` with `[Unreleased]`.
+2. `-prototype` → final rename + `themes/` mapping (one dedicated unit: builder, validator,
+   installed copies).
+3. `package.json` + lockfile + `ci-validate.yml` together (CI uses `npm ci`, which needs the
+   lockfile).
+4. TUI release skill, written against the real 0.1.0 publish.
+5. Manual publish 0.1.0.
+Deferred on purpose: the publish itself, funky-theme ↔ tui propagation rules and palette
+backport policy (cross-repo, only meaningful on a real palette change).
 
 ## Next step
 

@@ -8,7 +8,7 @@ repo. Short rules live in AGENTS.md; the process lives here.
 
 | Agent | Upstream source | What we diff | Tripwire | Cadence | Last revision |
 | --- | --- | --- | --- | --- | --- |
-| Pi | `gentle-pi` npm package, `themes/` inside `node_modules` | `Gentleman-Cute.json` **only** | `node check-upstream.mjs` after every package update (`VERSION DRIFT` / `DRIFT`) | on-update, no calendar | 2026-10-15 → 4.2.0 |
+| Pi | `gentle-pi` npm package, `themes/` inside `node_modules` | `Gentleman-Cute.json` **only** | `node scripts/check-upstream.mjs` after every package update (`VERSION DRIFT` / `DRIFT`) | on-update, no calendar | 2026-10-15 → 4.2.0 |
 | OpenCode | none — our themes are ours. The official repo may add theme keys over time (exact source TBD, not asserted here) | keys only, against official defaults | calendar | quarterly, first pending | — |
 | Claude Code | none — our themes are ours. Built-in themes (exact path TBD, not asserted here) | keys only, against built-ins | calendar | quarterly, first pending | — |
 
@@ -23,7 +23,7 @@ repo. Short rules live in AGENTS.md; the process lives here.
 ## Pi flow (the primary one)
 
 1. **Detect.** After any `npm update gentle-pi` (or weekly if untouched), run
-   `node check-upstream.mjs`. `VERSION DRIFT` or an upstream `DRIFT` row means a new generation
+   `node scripts/check-upstream.mjs`. `VERSION DRIFT` or an upstream `DRIFT` row means a new generation
    landed. The hashing logic is described in SOURCES.md: every pinned file is hashed each run, so
    silence means nothing moved.
 2. **Diff.** Old pinned content vs new on-disk files: added/renamed `vars`, changed `colors`

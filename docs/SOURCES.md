@@ -1,3 +1,7 @@
+> FROZEN 2026-10-15 — historical log, do not append. Living truth lives in
+> `docs/UPSTREAM.md` (watch + promotion process), `sources.json` (hash pins) and
+> `docs/release-channels.md` (release plan).
+
 # Gentleman theme sources
 
 ## Read this first
