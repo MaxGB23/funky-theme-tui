@@ -415,7 +415,6 @@ const ANCHORS = {
   error: 'errorTui',
   warning: 'yellowBase',
   info: 'cyanDim',
-  heading: 'pinkVibrant',
   code: 'cyanAccent',
   syntaxKeyword: 'pinkBase',
   syntaxFunction: 'cyanAccent',
@@ -633,14 +632,22 @@ const MAPPING = {
   // vars key, so no literal colour can leak into it.
   //
   // Surface design (approved OpenCode parity): Pi mirrors OpenCode's backgroundPanel ==
-  //   base relationship. bg/bgPanel/bgSubtle/toolPendingBg all sit on surfaceBase, so
-  //   cards (customMessageBg via bgSubtle) read as part of the canvas instead of a dark
-  //   hole, exactly like OpenCode's backgroundPanel. Elevation lives only in bgElement /
-  //   userMessageBg / toolSuccessBg (surfaceElevated). Upstream Gentleman-Cute also keeps
-  //   bgSubtle == bgPanel, so that relationship is preserved; only the rung changed.
-  //   infoBg keeps its own identity as the D1 composite of cyanDim over the panel —
-  //   see DERIVED_ALPHAS.infoSurface. toolPendingBg stays at the plain panel level
-  //   (now surfaceBase), still darker than toolSuccessBg (surfaceElevated).
+  //   base relationship. Four vars sit on surfaceBase. Three are referenced: bg
+  //   (scrollbarTrack), bgSubtle (customMessageBg) and toolPendingBg. Cards therefore read
+  //   as part of the canvas instead of a dark hole, exactly like OpenCode's
+  //   backgroundPanel. toolPendingBg stays at the plain panel level, still darker than
+  //   toolSuccessBg (surfaceElevated).
+  //   Elevation lives only in userMessageBg and toolSuccessBg (surfaceElevated).
+  //   Upstream Gentleman-Cute keeps bgSubtle == bgPanel; that var-level relationship is
+  //   preserved here, only the rung changed.
+  //   Four vars are referenced by NO color slot: bgPanel (the fourth surfaceBase var, so
+  //   the parity above is carried by three, not four), bgElement (declared at
+  //   surfaceElevated), pearl (greyLight) and infoBg — the last one declared as the D1
+  //   composite of cyanDim over the panel (see DERIVED_ALPHAS.infoSurface), which makes the
+  //   info surface currently unreachable. All four are unreferenced upstream too, and the
+  //   keyset is fixed at the template's 27 vars, so they are kept for parity, not deleted.
+  //   Our overrides orphan one more: `border` (upstream used it for colors.border and
+  //   colors.scrollbarThumb, both re-pointed to `accent` below).
   pi: {
     vars: {
       bg: 'surfaceBase',
@@ -684,19 +691,21 @@ const MAPPING = {
 //
 //   champagne -> customMessageLabel, toolTitle, mdHeading, mdCode, syntaxType, bashMode
 //
-// D4 gives OpenCode `markdownHeading` = pinkVibrant #ff8ddb. Pi routes mdHeading through
-// champagne, which follows its STRUCTURAL role (syntaxType -> syntaxType #fff9b7). So the
-// heading renders yellow while OpenCode renders it pink, and the fix the writer first
-// proposed -- retyping the whole 55-entry indirection table -- is unnecessary: `colors` is
-// already the indirection map, so re-pointing slots is a per-slot change.
+// mdHeading is one of those bundled roles: left on champagne it followed its STRUCTURAL role
+// (syntaxType -> syntaxType #fff9b7) and rendered YELLOW, while every other Funky agent
+// renders headings PINK. The fix is a re-point, not a retype: `colors` IS the indirection
+// map, so moving one slot is a per-slot change, not a rewrite of the 55-entry table.
 //
-// `softRose` holds pinkLight #ffa8e6, the only pink-family value in Pi's fixed 26-var keyset
-// (deepPink is a dark grey-violet, activePink a light periwinkle). Exact hex parity with
-// #ff8ddb is IMPOSSIBLE without adding a var the template does not have, so this closes the
-// family error (yellow vs pink) while knowingly leaving a tone difference. The validator
-// asserts direction of improvement, not hex equality.
+// `softRose` holds pinkLight #ffa8e6, the only pink-family value in the template's fixed
+// 27-var keyset (deepPink is a dark grey-violet, activePink a light periwinkle). The editor's
+// brighter markdown heading, pinkVibrant #ff8ddb, is NOT reachable without adding a var the
+// template does not have -- so the target is `soft`, the same pinkLight that OpenCode's
+// `markdownHeading` resolves to. Both terminal agents emit #ffa8e6 and differ only from the
+// editor. The validator asserts DIRECTION, not hex equality: the heading must sit strictly
+// nearer the OpenCode heading than the syntax-type colour it replaced.
 //
 // User-taste edges (all from the tested draft, all still naming vars keys, never literals):
+//   mdHeading -> softRose     headings render pink like every other agent, not champagne yellow
 //   accent -> softRose        the UI accent renders in softRose to match VSCode usage
 //   border -> accent          border reads as accent, not grey
 //   scrollbarThumb -> accent  thumb reads as accent, not grey
