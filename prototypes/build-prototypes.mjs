@@ -152,6 +152,11 @@ const DECLARED_TUI_TOKENS = {
   // Neither hex is in the VSCode palette, so neither is asserted against
   // theme-config.js; both are allowlisted in the validator by exact value.
   commentTui: '#8e8ea7',
+  // emphTui #ffd18e — palette.orangeAccent (#ffd089) already adapted to the
+  // darker tier by DARKER_SYNTAX, frozen here for BOTH tiers. Emphasis reads
+  // orange like VSCode but softer, so long terminal sessions fatigue less.
+  // Not in the VSCode palette as this hex; allowlisted in the validator.
+  emphTui: '#ffd18e',
 };
 
 /**
@@ -590,7 +595,7 @@ const MAPPING = {
     // Code-block base keeps fgBase while body copy moves to textTui: same
     // variables-vs-copy split as syntaxVariable.
     markdownCodeBlock: 'fgBase',
-    markdownEmph: 'muted',
+    markdownEmph: 'emphTui',
     markdownHeading: 'soft',
     markdownHorizontalRule: 'borderSubtle',
     markdownImage: 'accent',

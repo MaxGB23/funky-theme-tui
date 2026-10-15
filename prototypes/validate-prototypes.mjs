@@ -301,6 +301,7 @@ const SELECTION_TUI = {
 const DECLARED_TUI_VALUES = {
   '#eff0eb': { via: 'user-tested body text, all agents (variables keep fgBase)' },
   '#8e8ea7': { via: 'user-tested dim comment' },
+  '#ffd18e': { via: 'user-tested emphasis orange, frozen both tiers (orangeAccent darker-adapted)' },
 };
 
 /**
