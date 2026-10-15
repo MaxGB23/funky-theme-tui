@@ -301,19 +301,31 @@ to ship.
 
 | File | Bytes | SHA256 (first 16) |
 | --- | --- | --- |
-| Claude `funky-dark-prototype.json` | 3137 | `ECCC2561910EC05C3` |
-| Claude `funky-darker-prototype.json` | 3131 | `730AC892DF827AFC` |
-| OpenCode `funky-dark-prototype.json` | 1663 | `66D2200E51BBA43D` |
-| OpenCode `funky-darker-prototype.json` | 1663 | `EF31E40A0E38D0A4` |
-| OpenCode `funky-dark-transparent-prototype.json` | 1660 | `9826A8416995B90E` |
-| OpenCode `funky-darker-transparent-prototype.json` | 1660 | `072FB82C03F98771` |
-| Pi `funky-dark-prototype.json` | 2640 | `1C10B9A9BDE8AE8D` |
-| Pi `funky-darker-prototype.json` | 2642 | `C52E268A39C25D08` |
+| Claude `funky-dark-prototype.json` | 3139 | `16055BC8AEAADAE3` |
+| Claude `funky-darker-prototype.json` | 3133 | `E74A4F4EBD53D8C5` |
+| OpenCode `funky-dark-prototype.json` | 1663 | `AAFF90D97FD32DDE` |
+| OpenCode `funky-darker-prototype.json` | 1663 | `292824A59DF22FA3` |
+| OpenCode `funky-dark-transparent-prototype.json` | 1660 | `0DC11011AE4115B1` |
+| OpenCode `funky-darker-transparent-prototype.json` | 1660 | `0D9D8302255B2D49` |
+| Pi `funky-dark-prototype.json` | 2701 | `CF0EEFA37EE7F1F4` |
+| Pi `funky-darker-prototype.json` | 2703 | `D08F9B5FB70FBB09` |
 
-Re-hashed 2026-09-27 after the D7 re-tiering; every hash above changed, because D7 changes a
-canvas value in all 8 files. All eight were re-verified SHA256-identical to the `prototypes\`
-output at copy time. **No pre-existing file was overwritten** — the two OpenCode themes and Pi's
-`Gentleman.json` were re-hashed after the copy and are unchanged.
+Re-hashed 2026-10-14 for D10. **This table tracks the `prototypes\` output — that is what makes it
+checkable against the repo — not the installed copies.** Both Claude rows moved by 2 bytes, and by
+exactly that much: `promptBorder` and `promptBorderShimmer` went from `rgb(96,102,133)` (15
+characters) to `rgb(199,146,234)` (16), one byte per line, while every pink-for-purple swap in the
+accent family is length-preserving.
+
+The other six rows were found **already stale** while re-hashing for D10 — OpenCode's four kept their
+byte counts but changed content, Pi's two grew by 61 bytes each — so they are refreshed here rather
+than left claiming a hash nothing matches. That drift predates D10 and is recorded, not silently
+overwritten.
+
+**The installed copies now lag this table**, which is worth stating because an earlier version of
+this paragraph implied they could not. Claude's `~\.claude\themes\` currently holds the hand-installed
+test draft (3171 bytes — the draft's own size) rather than the emitted output, so a re-copy is what
+puts D10 on screen. The original copy overwrote no pre-existing file: the two OpenCode themes and
+Pi's `Gentleman.json` are unrelated to ours.
 
 These names do **not** collide with upstream: `gentle-pi` ships `Gentle`, `Gentleman-Cute` and
 `Gentleman-Sexy`, none of which is called `funky-*-prototype`.
@@ -584,6 +596,50 @@ the one existing occurrence is *proven* to be a path instead of waved through. B
 mutation-tested: putting the brand back into a stub as a value gives `1 failure, exit 1`; degrading
 the external path to a bare brand name also fails, which is what shows the allowance is live; the
 real path is read on every run and stays silent. `39 checks, 0 failures` is the new green.
+
+### D10 - Claude Code's accent is its own anchor, and the prompt border takes the purple it vacated
+
+Claude Code's accent is now `pinkLight #ffa8e6`, up from `purpleDim #c792ea`. The change is
+**Claude's alone**, and it is enforced structurally rather than by care: it is a NEW anchor
+(`accentClaude`) instead of a re-point of `accent`, because `accent` is **shared** — OpenCode
+consumes it for `accent`, `border`, `markdownImage` and `primary`, and Pi for `vars.accent`, which
+`colors.border` and `colors.scrollbarThumb` indirect to. Re-pointing the shared anchor would have
+repainted two agents that nobody tested; scoping it leaves both untouched, and `git diff --stat`
+over `prototypes\opencode` and `prototypes\pi` coming back **empty** is the proof rather than the
+promise.
+
+Sixteen rows moved in `MAPPING['claude-code']`: the twelve already on `accent` (`bashBorder`,
+`briefLabelClaude`, `briefLabelYou`, `claude`, the three `claudeBlue*`/`claudeShimmer` system-spinner
+slots, `ide`, `permission`, `permissionShimmer`, `professionalBlue`, `suggestion`), plus `clawd_body`
+(was `text`, `#eff0eb`) and `purple_FOR_SUBAGENTS_ONLY` (was `subagentPurple`). That last one is a
+**deliberate name/value split** — the slot says purple and now paints pink, because the tested draft
+does. It is recorded here rather than quietly normalised, so the next reader does not "fix" it back.
+
+`promptBorder` and `promptBorderShimmer` moved off `border` (`uiMuted #606685`) onto `purpleDim`,
+the accent's **own old value**. This is not border-accent parity: the accent is pink now, so the
+border simply inherits the purple that was vacated.
+
+**This supersedes the earlier rejection of that same change.** That decision kept promptBorder dim on
+a symmetry argument, and closed with its own reopening condition: *"future border-parity proposals
+must cite a visible render, not key-name symmetry."* The visible render now exists — the draft was
+live-tested in Claude Code and approved — so both halves of the old decision (border stays dim,
+accent stays `purpleDim`) are overridden by evidence, not by preference.
+
+The draft reproduces exactly, with one honest exception: whitespace.
+`DRAFTS\funky-dark-prototype-claude.json` is 3171 bytes and the emitted file is 3139; the 32-byte
+gap is exactly **two spaces on each of the sixteen hand-edited lines** (`rgb(255, 168, 230)`
+hand-written vs `rgb(255,168,230)` emitted). Claude Code parses both — the previously committed
+files carried no spaces and worked, the draft carries them and worked — so the difference is
+cosmetic, and matching it byte-for-byte would mean reflowing all 72 slots, untouched ones included,
+to chase an editing artefact. The emitter's format stands.
+
+`darker` inherits the decision through the tier chain and needed no second edit: the accent rows match
+the draft, while the thirteen keys that differ from it — the seven surfaces, the four diff washes,
+`inverseText` and `selectionBg` — are the **step-2 recompositions** of a dark-tier source file. That
+is the chain working as designed, not a second decision to make.
+
+`41 checks, 0 failures` is the new green; the two Claude rows of the install table above are re-hashed
+to this output.
 
 ---
 
