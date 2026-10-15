@@ -88,7 +88,7 @@
                               {
                                   "kind":  "excluded-reference",
                                   "agent":  "pi",
-                                  "path":  "material-trabajo/pi/Gentleman-Cute.json",
+                                  "path":  "upstream/pi/Gentleman-Cute.json",
                                   "bytes":  2671,
                                   "sha256":  "2f5da2b8fa21abf99dd0774e35c8369af4e57cca7bb2a3016870f756322d97a2",
                                   "required":  false,
@@ -234,13 +234,13 @@
                                                     "repoPath":  "material-trabajo/pi/Gentleman.json",
                                                     "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
                                                     "installPath":  "~/.pi/agent/themes/Gentleman.json",
-                                                    "installed":  true,
+                                                    "installed":  false,
                                                     "sha256":  "1e9df0b1680c0c82aa44edebae5033f8f5d045cc4f20fe6a98ca6b469eef8aa5",
                                                     "provenance":  "Content-verified 2026-10-15: byte-identical (2876 bytes) to upstream Gentle.json 4.2.0 under the Gentleman.json filename. Previously a renamed derivative of unknown origin; the refresh to upstream content happened on disk sometime after 2026-09-27."
                                                 },
                                                 {
                                                     "slug":  "Gentleman-Cute",
-                                                    "repoPath":  "material-trabajo/pi/Gentleman-Cute.json",
+                                                    "repoPath":  "upstream/pi/Gentleman-Cute.json",
                                                     "repoNote":  "vendored reference, not a committed artifact - see excludedFromBuild. 'installed' below is read from installPath, so it stays true whether or not repoPath exists in this clone.",
                                                     "installPath":  "~/.pi/agent/themes/Gentleman-Cute.json",
                                                     "installed":  false,

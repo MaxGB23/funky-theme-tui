@@ -9,27 +9,29 @@ at all.
 Of the three agents, only **Pi** has a real upstream (`gentle-pi` on npm). The Claude Code and
 OpenCode themes are entirely our own work.
 
-> **Where the artifacts actually live.** All six of our theme files are under **`material-trabajo\`**,
+> **Where things live.** Committed build inputs under **`material-trabajo\vscode-themes\`**, the single
+> upstream reference under **`upstream\pi\`** (gitignored), built themes under **`prototypes\`** —
 > not at the repo root:
 >
-> | Agent | Path |
+> | What | Path |
 > | --- | --- |
-> | Claude Code | `material-trabajo\claude-code\gentleman.json`, `…\gentleman-cute.json` |
-> | OpenCode | `material-trabajo\opencode\gentleman.json`, `…\gentleman-cute.json` |
-> | Pi | `material-trabajo\pi\Gentleman.json`, `…\Gentleman-Cute.json` |
+> | Build inputs (committed) | `material-trabajo\vscode-themes\theme-config.js`, `…\build.js` |
+> | Upstream reference, Pi only (ignored) | `upstream\pi\Gentleman-Cute.json` |
+>
+> The other five vendored theme files were removed from disk 2026-10-15 — nothing read them;
+> their hashes stay pinned in `sources.json`. See UPSTREAM.md.
 >
 > The **hashes in this document were always correct.** What was wrong was the *paths*: the
 > manifest pointed at the pre-`material-trabajo` locations, so the checker reported 6 spurious
 > `MISSING` rows and this document carried a false "the artifacts are gone" section. Both are
-> fixed as of 2026-09-27. After the 2026-10-15 re-pin to `gentle-pi` 4.2.0,
-> `node check-upstream.mjs` reports **25 ok, 2 warnings, 1 failure** (19 → 24 when D8 added the
-> prototype build's own inputs, 24 → 28 when the vendored base templates were reclassified as
-> excluded references). The 2 warnings are the user's live-test files in `~/.claude/themes/`
-> (`gentleman`, `gentleman-cute` — the manifest says not installed and the files exist, which is
-> correct for tests). The 1 failure is `Gentleman installed MISSING`:
-> `~/.pi/agent/themes/Gentleman.json` is gone from the live machine while the manifest still says
-> `installed:true` — if the delete was deliberate the flag should flip to `false`, otherwise the
-> file should be restored. Every hash the manifest pins verifies; nothing hashed drifts. See *Resolved: the spurious MISSING
+> fixed as of 2026-09-27. After the 2026-10-15 re-pin to `gentle-pi` 4.2.0 and the `Gentleman`
+> retirement (see UPSTREAM.md), `node check-upstream.mjs` reports **26 ok, 2 warnings, 0 failures**,
+> exit 0 (19 → 24 when D8 added the prototype build's own inputs, 24 → 28 when the vendored
+> base templates were reclassified as excluded references). The 2 warnings are the user's live-test
+> files in `~/.claude/themes/` (`gentleman`, `gentleman-cute` — the manifest says not installed and
+> the files exist, which is correct for tests). The former failure (`Gentleman installed MISSING`)
+> is resolved by recording the deletion: the manifest now says `installed:false`. Every hash the
+> manifest pins verifies; nothing hashed drifts. See *Resolved: the spurious MISSING
 > reports* and *D8* below.
 >
 > **Those six files are IGNORED, not deleted.** They stay on disk. `.gitignore` keeps them out of
@@ -175,9 +177,10 @@ Upstream files present on disk (mtime 2026-10-13, installed with `gentle-pi` 4.2
 | `Gentleman-Sexy.json` | 2651 | `145BE85539F26397` |
 
 > Re-pinned 2026-10-15: `gentle-pi` 3.7.0 → **4.2.0** (on-disk truth at `package.json`,
-> mtime 2026-10-13). All three rows above are 4.2.0, and so are the two `material-trabajo\pi\`
-> reference copies, which were refreshed on disk to byte-identical 4.2.0 content sometime after
-> 2026-09-27. The detection logic is unchanged and lives in `check-upstream.mjs`: every file under
+> mtime 2026-10-13). All three rows above are 4.2.0. The on-disk reference was consolidated
+> 2026-10-15: only `upstream\pi\Gentleman-Cute.json` remains (byte-identical to the live upstream
+> file); the other five vendored theme files were deleted from disk, their hashes staying pinned
+> in `sources.json`. The detection logic is unchanged and lives in `check-upstream.mjs`: every file under
 > `agents.pi.upstreamFiles` is hashed with SHA-256 on each run and compared against the manifest
 > (`DRIFT` on mismatch), the on-disk `package.json` version is compared against
 > `agents.pi.upstream.version` (`VERSION DRIFT`), and the Pi build input (`Gentleman-Cute.json`,
@@ -268,6 +271,10 @@ and the warning/error family were identical.
 
 ### `material-trabajo\pi\Gentleman.json` — provenance unknown
 
+> Retired from review 2026-10-15 — `Gentleman` is diffed nowhere, see UPSTREAM.md. What follows is
+> the forensic record of the 2026-09-27 file, kept as history; the on-disk copy has since been
+> refreshed to byte-identical upstream `Gentle` 4.2.0 content (see `sources.json`).
+
 | File | Bytes | SHA256 (first 16) |
 | --- | --- | --- |
 | `material-trabajo\pi\Gentleman.json` | 2629 | `7C3B8C584585955F` |
@@ -297,9 +304,7 @@ re-colored**.
 | Pi | `gentle-pi/themes/Gentleman-Cute.json` | upstream | yes — **this is what Pi rendered until 2026-09-27 07:15; since then Pi renders `funky-dark-prototype`** |
 | Pi | `gentle-pi/themes/Gentleman-Sexy.json` | upstream | yes |
 
-The two installed OpenCode files are SHA256-identical to our `material-trabajo\opencode\` copies. The
-one remaining installed Pi file, `~/.pi/agent/themes/Gentleman.json`, is a renamed derivative of
-unknown provenance. Pi's theme setting now points at `funky-dark-prototype`, so **no Gentleman
+The two installed OpenCode files were SHA256-identical to our `material-trabajo\opencode\` copies on 2026-09-27; since then the install dir has served as the live-test lab and diverges by design (see UPSTREAM.md). The installed Pi `Gentleman.json` is gone from the live machine — retired 2026-10-15, manifest `installed:false`; the reference copy on disk is byte-identical to upstream `Gentle` 4.2.0. Pi's theme setting now points at `funky-dark-prototype`, so **no Gentleman
 theme is currently rendering in any agent** — the live theme is the Funky `dark` prototype in Claude
 Code and Pi, and `gentleman` in OpenCode.
 
@@ -748,18 +753,16 @@ reason, which is **not** a failure.
 > `installed: false` because that file was deleted on purpose. A checker run that lists it as
 > `absent, as expected` is reporting the intended state, not drift.
 >
-> **The six vendored templates are NOT deleted.** They are ignored: present on disk, excluded by
-> `.gitignore`, hash-pinned in `sources.json`. An `artifacts` row for one of them reads `excluded`
-> rather than `MISSING`, and the full report lives under *excluded from the build*. See D8.
+> **The six vendored templates are NOT deleted from the record.** Their hashes stay pinned in
+> `sources.json`: five were removed from disk 2026-10-15 (nothing read them) and one moved to
+> `upstream\pi\`. An `artifacts` row for one of them reads `excluded`
+> rather than `MISSING`, and the full report lives under *excluded from the build*. See D8 and UPSTREAM.md.
 
 To re-derive the manifest by hand:
 
 ```powershell
-# Repo artifacts — note the material-trabajo\ prefix
-Get-FileHash -Algorithm SHA256 .\material-trabajo\claude-code\gentleman.json, `
-  .\material-trabajo\claude-code\gentleman-cute.json, `
-  .\material-trabajo\opencode\gentleman.json, .\material-trabajo\opencode\gentleman-cute.json, `
-  .\material-trabajo\pi\Gentleman.json, .\material-trabajo\pi\Gentleman-Cute.json
+# Upstream reference — the single kept copy (UPSTREAM.md)
+Get-FileHash -Algorithm SHA256 .\upstream\pi\Gentleman-Cute.json
 
 # Installed copies
 Get-FileHash -Algorithm SHA256 "$env:USERPROFILE\.config\opencode\themes\*.json", `
@@ -786,14 +789,13 @@ Test-Path ".\.opencode"                               # expect False
 Get-FileHash -Algorithm SHA256 .\prototypes\templates\claude-code.json, `
   .\prototypes\templates\opencode.json
 node prototypes\build-prototypes.mjs      # writes the 8 emitted files, nothing else
-node prototypes\validate-prototypes.mjs   # expect: 39 checks, 0 failures
+node prototypes\validate-prototypes.mjs   # expect: 41 checks, 0 failures
 
 # What .gitignore keeps out of a commit (D8). The two files the build NEEDS must
 # print nothing and exit 1; everything else must print its path and exit 0.
 git check-ignore material-trabajo\vscode-themes\theme-config.js   # expect no output, exit 1
 git check-ignore material-trabajo\vscode-themes\build.js          # expect no output, exit 1
-git check-ignore material-trabajo\pi\Gentleman.json                # expect the path, exit 0
-git check-ignore material-trabajo\vscode-themes\maxiano-dark.json  # expect the path, exit 0
+git check-ignore upstream\pi\Gentleman-Cute.json  # expect the path, exit 0
 # Whole-tree view: ignored files are prefixed '!!', the two build inputs are not there.
 git status --porcelain --ignored=matching
 

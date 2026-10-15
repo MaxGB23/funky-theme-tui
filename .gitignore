@@ -28,31 +28,18 @@
 # a committed copy is both noise and a permanent record of nothing. It is caught
 # twice over, by .pi/ above and by *.log below, on purpose.
 
-# --- Vendored base templates: somebody else's work -------------------------
-# Six files vendored from another project. They are kept on disk and hash-pinned
-# in sources.json as evidence of what the prototype build's derived stubs were
-# made from, so the exclusion stays auditable.
+# --- Upstream reference: somebody else's work --------------------------------
+# Exactly ONE file: the maintained Pi upstream theme we diff against
+# (Gentleman Programming's Gentleman-Cute, kept current for gentle-shell).
+# It is kept on disk and hash-pinned in sources.json so the exclusion stays
+# auditable. The other five vendored theme files were deleted from disk on
+# 2026-10-15 — nothing read them — but their hashes stay pinned in
+# sources.json, and the checker reports an absent excluded file as expected
+# rather than as a failure. See UPSTREAM.md.
 #
-# These are IGNORED, NOT DELETED. Do not read this block as permission to remove
-# the local copies; sources.json records a hash for each one, and the checker
-# reports an absent one as expected rather than as a failure.
-#
-# Listed one path per line rather than as a directory glob, deliberately: a glob
-# would silently swallow a first-party theme dropped into one of these folders
-# later, and sources.json already pins the exact set of six.
-material-trabajo/claude-code/gentleman-cute.json
-material-trabajo/claude-code/gentleman.json
-material-trabajo/opencode/gentleman-cute.json
-material-trabajo/opencode/gentleman.json
-material-trabajo/pi/Gentleman.json
-material-trabajo/pi/Gentleman-Cute.json
-
-# --- Vendored upstream build output ----------------------------------------
-# 146,622 bytes of another project's COMPILED themes across 5 files. No part of
-# this pipeline reads them - not prototypes/build-prototypes.mjs, not
-# check-upstream.mjs, not validate-prototypes.mjs. They are reference material,
-# not input, so nothing downstream can break when they are absent.
-material-trabajo/vscode-themes/maxiano-*.json
+# One path, not a directory glob, deliberately: a glob would silently swallow
+# a first-party theme dropped into upstream/ later.
+upstream/pi/Gentleman-Cute.json
 
 # --- Local orchestration state ----------------------------------------------
 # odd/ holds the task-tracking documents for the agent tooling that drove this
@@ -65,6 +52,14 @@ material-trabajo/vscode-themes/maxiano-*.json
 # parts that describe the shipped result were written into SOURCES.md and
 # sources.json, which are tracked.
 odd/
+
+# --- Lab inbox: live-test drops awaiting triage ----------------------------------
+# inbox/ receives files copied from the live install dirs (tested tweaks) and
+# other test material. Nothing here is source: every file is either promoted
+# into the repo's real sources or deleted, and UPSTREAM.md records which.
+# Ignored so a broad `git add .` can never commit the lab by accident; when a
+# file must enter history as evidence, `git add -f` it explicitly.
+inbox/
 
 # --- Dependencies ----------------------------------------------------------
 node_modules/
