@@ -1760,6 +1760,7 @@ const ALLOWED_COLOR_OVERRIDES = {
   border: 'accent',
   scrollbarThumb: 'accent',
   mdCode: 'mint',
+  mdLinkUrl: 'powderBlue',
 };
 
 /**

@@ -710,6 +710,7 @@ const MAPPING = {
 //   border -> accent          border reads as accent, not grey
 //   scrollbarThumb -> accent  thumb reads as accent, not grey
 //   mdCode -> mint            inline code renders in mint green, not champagne yellow
+//   mdLinkUrl -> powderBlue  link URL renders in cyan, link text stays on accent purple
 // `selectedBg` stays on the template's `selection`: the floating highlight bar
 // (command-palette.ts paints it via bg("selectedBg")) needs the accent wash to
 // stand out from the flat canvas, and `selection` recomputes per tier. The draft
@@ -721,6 +722,7 @@ const PI_COLOR_OVERRIDES = {
     border: 'accent',
     scrollbarThumb: 'accent',
     mdCode: 'mint',
+    mdLinkUrl: 'powderBlue',
   },
 };
 
