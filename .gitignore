@@ -35,7 +35,7 @@
 # auditable. The other five vendored theme files were deleted from disk on
 # 2026-10-15 — nothing read them — but their hashes stay pinned in
 # sources.json, and the checker reports an absent excluded file as expected
-# rather than as a failure. See UPSTREAM.md.
+# rather than as a failure. See docs/UPSTREAM.md.
 #
 # One path, not a directory glob, deliberately: a glob would silently swallow
 # a first-party theme dropped into upstream/ later.
@@ -56,7 +56,7 @@ odd/
 # --- Lab inbox: live-test drops awaiting triage ----------------------------------
 # inbox/ receives files copied from the live install dirs (tested tweaks) and
 # other test material. Nothing here is source: every file is either promoted
-# into the repo's real sources or deleted, and UPSTREAM.md records which.
+# into the repo's real sources or deleted, and docs/UPSTREAM.md records which.
 # Ignored so a broad `git add .` can never commit the lab by accident; when a
 # file must enter history as evidence, `git add -f` it explicitly.
 inbox/

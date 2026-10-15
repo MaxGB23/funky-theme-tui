@@ -8,3 +8,10 @@
 ## Seguimiento ODD (`odd/`)
 - `odd/` es caché local (no se trackea; el respaldo vive en Engram).
 - Limpiar una feature SOLO si: feature cerrada en git Y espejo Engram sincronizado (sin pendientes). Si el sync de Engram falló, conservar el archivo local y reintentar.
+
+### Upstream y proceso (ver docs/UPSTREAM.md)
+- Solo Pi tiene upstream con diff: `Gentleman-Cute.json` y nada más. `Gentleman` jubilado.
+- Install dirs = lab, repo = verdad. Reportar diffs instalados slot por slot; el usuario elige qué se promueve; solo el lado repo se commitea.
+- Tras cada update de `gentle-pi`: `node scripts/check-upstream.mjs`, re-pinear con drift, fechar la tabla de UPSTREAM.md.
+- OpenCode/Claude: key-checks trimestrales contra fuentes oficiales; actualizar `Last revision`.
+- Carpetas: lo nuevo nace con el trabajo que lo necesita (`themes/` en el pass 0.1.0); nada especulativo en root. `inbox/` = promover o borrar; `git add -f` para evidencia deliberada.
