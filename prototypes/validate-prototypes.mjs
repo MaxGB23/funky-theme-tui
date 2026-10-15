@@ -227,6 +227,7 @@ const LOWERED_ALPHAS = new Set([
 const TRANSCRIBED_NOT_EMITTED = {
   accentFaint: 'editor.wordHighlightBackground / wordHighlightStrong / editorBracketMatch.background',
   controlBorder: 'editor.selectionBackground border / focusBorder',
+  diffAddedBg: 'diff added wash (build.js lowered accent alpha over base), superseded by the ADDED_BG_TUI flats',
   guideAccent: 'editorOverviewRuler.findMatchForeground',
   highlightBorder: 'editor.rangeHighlightBorder',
   matchBorder: 'editor.findMatchBorder',
@@ -312,6 +313,18 @@ const DECLARED_TUI_VALUES = {
 const PANEL_TUI = {
   dark: '#1c1925',
   darker: '#0f0d15',
+};
+
+/**
+ * Added-diff background per tier. Mirror of the builder's ADDED_BG_TUI —
+ * own copy on purpose. Dark keeps the old wash hex #292740; darker holds
+ * the user-tested #1d1c30 against near-black (see builder for why the wash
+ * cannot composite it). OpenCode's border shares the table by design: it
+ * surfaces only in the always-visible thick scrollbar.
+ */
+const ADDED_BG_TUI = {
+  dark: '#292740',
+  darker: '#1d1c30',
 };
 
 // ---------------------------------------------------------------------------
@@ -1429,15 +1442,14 @@ function checkSurfaces() {
 // the thing under test, so it cannot come from the build script. Pi `selection` is
 // deliberately ABSENT: it paints the user-tested SELECTION_TUI flats, checked by
 // checkSelectionTui below — leaving it here would demand a composite that must not exist.
+// The added-diff family is ABSENT for the same reason: claude diffAdded/diffAddedDimmed
+// and opencode diffAddedBg/diffAddedLineNumberBg paint the user-tested ADDED_BG_TUI
+// flats, checked by checkAddedBgTui below (opencode border shares them, also flat).
 const ALPHA_SLOTS = [
   ['claude-code', 'selectionBg', 'accentSelection'],
   ['claude-code', 'userMessageBackgroundHover', 'hoverSurface'],
-  ['claude-code', 'diffAdded', 'diffAddedBg'],
-  ['claude-code', 'diffAddedDimmed', 'diffAddedBg'],
   ['claude-code', 'diffRemoved', 'diffRemovedBg'],
   ['claude-code', 'diffRemovedDimmed', 'diffRemovedBg'],
-  ['opencode', 'diffAddedBg', 'diffAddedBg'],
-  ['opencode', 'diffAddedLineNumberBg', 'diffAddedBg'],
   ['opencode', 'diffRemovedBg', 'diffRemovedBg'],
   ['opencode', 'diffRemovedLineNumberBg', 'diffRemovedBg'],
   ['pi', 'deepPink', 'searchBackground'],
@@ -1616,6 +1628,43 @@ function checkPanelTui() {
   }
 }
 
+/**
+ * Added-diff background flats: opencode border + diffAddedBg +
+ * diffAddedLineNumberBg and claude-code diffAdded + diffAddedDimmed must
+ * equal ADDED_BG_TUI for their own tier, in EVERY file including opencode
+ * transparent ones (unlike background, these never pass through).
+ */
+function checkAddedBgTui() {
+  const check = 'criterion-4-added-bg';
+  let verified = 0;
+  const plan = [
+    ['opencode', ['border', 'diffAddedBg', 'diffAddedLineNumberBg']],
+    ['claude-code', ['diffAdded', 'diffAddedDimmed']],
+  ];
+  const expected = variantsFor('opencode').length * 3 + variantsFor('claude-code').length * 2;
+  for (const [agent, slots] of plan) {
+    for (const variant of variantsFor(agent)) {
+      const out = slotsOf(agent, outputs[`${agent}/${variant.id}`]);
+      for (const slot of slots) {
+        if (!(slot in (out ?? {}))) {
+          fail(check, `${agent}/${variant.id}.${slot}: missing, cannot verify the ADDED_BG_TUI flat`);
+          continue;
+        }
+        if (toHex(out[slot]) !== ADDED_BG_TUI[variant.tier]) {
+          fail(check, `${agent}/${variant.id}.${slot} = ${toHex(out[slot])}, expected ADDED_BG_TUI ` +
+            `(${variant.tier}) = ${ADDED_BG_TUI[variant.tier]}`);
+        } else {
+          verified += 1;
+        }
+      }
+    }
+  }
+  if (ADDED_BG_TUI.dark === ADDED_BG_TUI.darker) fail(check, `ADDED_BG_TUI dark == darker: tier flats must differ`);
+  if (verified === expected && ADDED_BG_TUI.dark !== ADDED_BG_TUI.darker) {
+    pass(check, `added-diff bg paints the user-tested flats per tier (dark ${ADDED_BG_TUI.dark} / darker ${ADDED_BG_TUI.darker}) across opencode border+diffs and claude diffs`);
+  }
+}
+
 function checkValuesAccountedFor() {
   const check = 'criterion-4-accounting';
   const paletteHexes = Object.values(readPalette());
@@ -1686,6 +1735,8 @@ function checkValuesAccountedFor() {
     allowed[tier].add(SELECTION_TUI[tier]);
     // OpenCode-only panel surface for exactly this tier (never chained).
     allowed[tier].add(PANEL_TUI[tier]);
+    // Added-diff background flats for exactly this tier (never chained).
+    allowed[tier].add(ADDED_BG_TUI[tier]);
   }
 
   for (const agent of Object.keys(TEMPLATES)) {
@@ -1966,11 +2017,22 @@ const DEEMPHASIS_PAIRS = [
  *   luma above muted and the user is still iterating the comment color.
  *   Revisit when the tone is final: either the new tone recedes (remove this)
  *   or it still inverts (keep with the new numbers).
+ *
+ *   opencode borderSubtle vs border — user-tested quiet scroll: opencode
+ *   `border` surfaces ONLY in the scrollbar (tested live with intense #2e3,
+ *   invisible everywhere else), and that scroll is always visible and thick,
+ *   so it shares the added-diff bg flats (#292740 / #1d1c30) instead of accent.
+ *   borderSubtle keeps the louder guideMid, so the pair reads inverted by
+ *   design, not by accident.
  */
 const ORDERING_EXCEPTIONS = [
   {
     agent: 'opencode', recessive: 'syntaxComment', dominant: 'textMuted',
     reason: 'user-tested comment tone, iterating until final',
+  },
+  {
+    agent: 'opencode', recessive: 'borderSubtle', dominant: 'border',
+    reason: 'user-tested quiet scroll sharing the added-diff bg (border paints only the scrollbar)',
   },
 ];
 
@@ -2006,8 +2068,9 @@ function checkDeemphasisOrdering() {
   }
 
   if (!failures.some((f) => f.startsWith(`[${check}]`))) {
+    const kinds = [...new Set(ORDERING_EXCEPTIONS.map((e) => `${e.agent} ${e.recessive} vs ${e.dominant}`))].join('; ');
     pass(check, `${pairs} de-emphasis pairs recede in every file that has them: borderSubtle < border, dim < muted` +
-      (acknowledged.length ? `, plus ${acknowledged.length} acknowledged exception(s) (opencode syntaxComment vs textMuted: user iterating tone)` : ''));
+      (acknowledged.length ? `, plus ${acknowledged.length} acknowledged exception(s) (${kinds})` : ''));
   }
 }
 
@@ -2621,6 +2684,7 @@ checkAlphaPerVariant();
 checkDarkValuesNotLeaked();
 checkSelectionTui();
 checkPanelTui();
+checkAddedBgTui();
 checkValuesAccountedFor();
 checkCriterion6();
 checkSurfaceTiers();
