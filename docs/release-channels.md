@@ -6,7 +6,7 @@ One repo family, three distribution models. VS Code and Zed live in their own re
 
 1. VS Code change → release skill → GitHub Release `vX.Y.Z` + vsix → **you** upload to Marketplace / Open VSX.
 2. Zed change → tag `zed-vX.Y.Z` → action opens registry PR → merge upstream → users update.
-3. TUI change → `node prototypes/build-prototypes.mjs` + validate → tag `tui-v0.x.x` (proposed default — a bare `v0.x.x` would collide with the VS Code `vX.Y.Z` namespace in family tooling) → local `npm stage publish` + human `npm stage approve` with 2FA (manual by design — no publish in CI) → install per agent below.
+3. TUI change → `node prototypes/build-prototypes.mjs` + validate → tag `tui-v0.x.x` (confirmed — a bare `v0.x.x` would collide with the VS Code `vX.Y.Z` namespace in family tooling) → local `npm stage publish` + human `npm stage approve` with 2FA (manual by design — no publish in CI) → install per agent below.
 
 ## Details
 
@@ -14,7 +14,7 @@ One repo family, three distribution models. VS Code and Zed live in their own re
 |---|---|---|---|---|
 | VS Code | `package.json` | `vX.Y.Z` | `funky-theme-vscode-<ver>.vsix` | GitHub Release + manual Marketplace / Open VSX |
 | Zed | `zed/extension.toml` | `zed-vX.Y.Z` (annotated) | `zed/themes/funky-theme.json` | Registry PR to `zed-industries/extensions` |
-| TUI agents | `package.json` (proposed, `0.x.x`) | `tui-v0.x.x` (proposed) | 8 JSONs under `prototypes/` (published layout: `themes/`, see below) | npm `funky-theme-tui` (native channel for Pi; manual-copy mirror for OpenCode/Claude Code) |
+| TUI agents | `package.json` (proposed, `0.x.x`) | `tui-v0.x.x` (confirmed) | 8 JSONs under `prototypes/` (published layout: `themes/`, see below) | npm `funky-theme-tui` (native channel for Pi; manual-copy mirror for OpenCode/Claude Code) |
 
 ### VS Code + Open VSX — live in its own repo, manual by design (family reference)
 
@@ -38,7 +38,7 @@ Remove-Item RELEASE_NOTES.md                  # transient, never versioned
 
 CI is validation only (`.github/workflows/ci-build.yml`): checkout, pnpm setup, Node 20, `pnpm install --frozen-lockfile`, build, validate. No secrets, no publish.
 
-Boundaries are per channel: `git log $(git describe --tags --match "v[0-9]*")..HEAD` for VS Code, `--match "zed-v*"` for Zed. A `zed-v*` tag is invisible to the VS Code pipeline and vice versa. TUI tags use the `tui-v*` prefix (proposed default) precisely so they stay invisible to the `v[0-9]*` VS Code match — a bare `v0.x.x` tag WOULD match it and pollute the VS Code range.
+Boundaries are per channel: `git log $(git describe --tags --match "v[0-9]*")..HEAD` for VS Code, `--match "zed-v*"` for Zed. A `zed-v*` tag is invisible to the VS Code pipeline and vice versa. TUI tags use the `tui-v*` prefix (confirmed) precisely so they stay invisible to the `v[0-9]*` VS Code match — a bare `v0.x.x` tag WOULD match it and pollute the VS Code range.
 
 ### Zed — live in its own repo, registry PR per release (family reference)
 
@@ -71,7 +71,7 @@ What the action does:
 
 ### TUI agents — proposed, npm as source of truth for Pi (manual-copy mirror for the rest)
 
-Current state: 8 deterministic prototypes, zero deps, no `package.json`, no CI. Proposed: independent `0.x.x` stream (never `3.x` — that would claim to track Funky VS Code, which is false). Tags use the `tui-v` prefix (proposed default) so they never collide with the VS Code `vX.Y.Z` namespace.
+Current state: 8 deterministic prototypes, zero deps, no `package.json`, no CI. Proposed: independent `0.x.x` stream (never `3.x` — that would claim to track Funky VS Code, which is false). Tags use the `tui-v` prefix (confirmed) so they never collide with the VS Code `vX.Y.Z` namespace. Scope decided: all 8 prototypes ship; final names drop `-prototype` (`funky-dark`, `funky-darker`, plus `funky-dark-transparent` / `funky-darker-transparent` for OpenCode only).
 
 ```bash
 node prototypes/build-prototypes.mjs
@@ -112,7 +112,7 @@ Supply-chain baseline (manual model, decided): stage locally with `npm stage pub
 |---|---|---|---|
 | OpenCode | **No market** — themes load from `~/.config/opencode/themes/`, `<root>/.opencode/themes/`, `./.opencode/themes/` (later wins); `share` is session links, plugins are JS/TS modules, not a theme channel | `~/.config/opencode/themes/funky-*.json`, name set in `tui.json` (`{"theme": "..."}`, NOT `opencode.json` — that key is deprecated) | npm tarball is a manual-copy mirror only (OpenCode cannot consume npm); team override via `.opencode/themes/`; transparent variants (`background: "none"`) only here; current files emit flat hex only (no `defs`, no `{dark,light}` variants — an allowed subset, not a format limit) |
 | Claude Code | Plugin marketplace with **`experimental.themes`** (unstable API — manifest shape may still change) + local dir | `~/.claude/themes/` with `custom:` prefix, or plugin `themes/*.json` (`{ "name", "base", "overrides" }`; colors accept `#rrggbb`, `#rgb`, `rgb()`, `ansi256(n)`, `ansi:<name>`; `base` in `dark`, `light`, `dark/light-daltonized`, `dark/light-ansi`) | 0.1.0 scope (proposed): local-dir copy only; plugin (`plugin.json` + `themes/` + marketplace entry) is phase 2 — needs version pinning plus strict-mode and name-reservation handling; npm tarball stays the reviewable source; "plugin themes are read-only" is UNVERIFIED, do not rely on it |
-| Pi | npm packages (**real channel**) | `~/.pi/agent/themes/` (global), `.pi/themes/` (project, after trust), or packaged themes via `pi install npm:funky-theme-tui` | Publish with `themes/` at root (or declared paths) + `keywords: ["pi-package"]` (gallery discovery only) + REQUIRED `pi: {"themes": [...]}` manifest; strict schema (6 color forms incl. `oklch()`/`okhsl()`/256-index/var-ref/`""`, unique `name` = filename, `appearance`); validate against the published theme schema; drop the `-prototype` suffix before 0.1.0 |
+| Pi | npm packages (**real channel**) | `~/.pi/agent/themes/` (global), `.pi/themes/` (project, after trust), or packaged themes via `pi install npm:funky-theme-tui` | Publish with `themes/` at root (or declared paths) + `keywords: ["pi-package"]` (gallery discovery only) + REQUIRED `pi: {"themes": [...]}` manifest; strict schema (6 color forms incl. `oklch()`/`okhsl()`/256-index/var-ref/`""`, unique `name` = filename, `appearance`); validate against the published theme schema; final names drop `-prototype` (decided for all 8: `funky-dark`, `funky-darker`) |
 
 ~72 Claude tokens across the `base` presets (per 2.1.x; unknown tokens are silently ignored), 49 OpenCode tokens (flat hex — a subset of the documented format), Pi `vars` + `colors` indirections under a strict schema. A file correct for one agent is silently wrong for another — never copy across agents.
 
@@ -121,7 +121,7 @@ Supply-chain baseline (manual model, decided): stage locally with `npm stage pub
 - [ ] VS Code release used the skill, changelog was finalized before packaging, `verify:vsix` passed.
 - [ ] Zed tag matches `extension.toml`, Zed artifact actually changed, registry PR is the only open one for the branch.
 - [ ] TUI build is byte-deterministic, validator + upstream checker green, tarball contains only allowlisted files.
-- [ ] publish used the manual model (local stage + human 2FA approve, no CI publish); RC policy resolved first: either RCs go to `--tag next` or no prereleases at all (backlog says "sin prereleases" — decide once, then delete the other half of this line).
+- [ ] publish used the manual model (local stage + human 2FA approve, no CI publish); every publish is final — no prereleases (decided, consistent with backlog). If it breaks, ship a patch; `latest` is always the newest stable.
 
 ## Open checklist — project rules and release
 
@@ -137,4 +137,4 @@ Pending definitions before the first `0.1.0`. Tracked here so they are not lost.
 
 ## Next step
 
-Decided: manual publish model (no `publish.yml` ever). Still to decide in order: (1) the TUI `0.1.0` scope (which of the 8 prototypes ship, `-prototype` rename, `themes/` layout), (2) RC policy (`--tag next` vs. no prereleases), (3) tag prefix confirmation (`tui-v*` proposed). Then add `package.json` + `ci-validate.yml` + TUI release skill derived from the VS Code pattern without the VSIX step.
+Decided: manual publish model (no `publish.yml` ever), all-8 scope with final names minus `-prototype`, `tui-v*` tags, no prereleases (every publish is final; breakage ships as a patch). Then add `package.json` + `ci-validate.yml` + TUI release skill derived from the VS Code pattern without the VSIX step. The `-prototype` → final rename itself (builder, validator, installed copies) is implementation work for the 0.1.0 pass, not a doc edit.
