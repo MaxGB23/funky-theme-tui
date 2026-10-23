@@ -36,6 +36,16 @@ Agents answer in markdown. That *is* the surface you read — which is why this 
   <img src="public/images/opencode-funky-darker.png" alt="Funky Darker in OpenCode" width="95%">
 </p>
 
+<p align="center"><strong>Funky Classic — OpenCode (work in progress)</strong></p>
+
+<p align="center">
+  <img src="public/images/opencode-funky-classic.png" alt="Funky Classic in OpenCode" width="95%">
+</p>
+
+**Funky Classic** is chain step 0: the palette's own canvas, `#24212e` — the exact surface the VS Code theme is built on. `dark` and `darker` are its terminal-tuned derivatives; this is the origin, same hues and same semantic roles, with nothing stepped down.
+
+> Not shipped yet: no builder entry, provisional elevation, and it exists because this canvas was once rejected here as too bright for a terminal — this is the retest. It is not one of the **8 files** listed below.
+
 <p align="center"><strong>Funky Dark — Claude Code</strong></p>
 
 <p align="center">
@@ -65,7 +75,7 @@ Terminal developers read differently. Some want balanced contrast for long sessi
 
 **Transparent variants** (OpenCode only): identical semantics, `background: "none"` — inherits your terminal's bg. Claude Code and Pi can't express transparency, so no false variants are generated.
 
-> **Surface ladder.** Three steps, two of them shipped: `step 0` `#24212e` (the editor canvas — **not shipped**) → `step 1` `#181520` (shipped as `dark`) → `step 2` `#0a0910` (shipped as `darker`). The editor's `Darker` becomes TUI `dark`; TUI `darker` pushes deeper. OpenCode's panel surface follows the tier one lift below elevated: `#1c1925` / `#0f0d15`.
+> **Surface ladder.** Three steps, two of them shipped: `step 0` `#24212e` (the editor canvas — **not shipped**, previewed above as `classic`) → `step 1` `#181520` (shipped as `dark`) → `step 2` `#0a0910` (shipped as `darker`). The editor's `Darker` becomes TUI `dark`; TUI `darker` pushes deeper. OpenCode's panel surface follows the tier one lift below elevated: `#1c1925` / `#0f0d15`.
 
 **8 files total**: 2 tiers × 3 agents + 2 transparent (OpenCode only).
 

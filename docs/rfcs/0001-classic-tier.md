@@ -1,6 +1,8 @@
 # RFC 0001 — `classic`: shipping the palette's own canvas as a third TUI tier
 
-**Status:** Draft — nothing built, nothing published.
+**Status:** Draft — nothing built, nothing published. The hardcoded files under live iteration live
+on branch `feat/classic-tier`, never on `main`; `main` ships no `classic` artifact and its validator
+stays green.
 **Date:** 2026-10-20
 **Scope:** `prototypes/build-prototypes.mjs`, `prototypes/validate-prototypes.mjs`, `README.md`, `docs/SOURCES.md`
 **Tested so far:** OpenCode only. Pi pending. Claude Code deliberately deprioritized (it inherits a
@@ -172,3 +174,12 @@ That framing is honest: it says out loud that `dark`/`darker` are the terminal-a
 
 - **2026-10-20** — Tier id `classic` agreed. Flat set drafted and tested in OpenCode only. Nothing
   built; `#2e2a3a` explicitly left open pending a second test round.
+- **2026-10-20 (later)** — Three hardcoded prototype files added on branch `feat/classic-tier`
+  (OpenCode solid + transparent, Pi solid) with `#2c2938` as the provisional elevation, for live
+  iteration. No script touched; the builder still knows two tiers. `main` carries none of them, so
+  its validator stays green. `#2c2938` remains fork **B** and is expected to move.
+- **2026-10-20 (last)** — README publishes the OpenCode capture under 📸 Preview as "work in progress":
+  caption, one paragraph of framing (chain step 0, the palette's own canvas), and a caveat stating it is
+  not shipped and not part of the 8 files. The capture survives either fork of `backgroundElement` — A
+  `#2e2a3a` and B `#2c2938` are not distinguishable in it — so showcasing it does not close or bias open
+  question 1, and deciding that question will not age the image.
