@@ -1,8 +1,9 @@
 # RFC 0001 — `classic`: shipping the palette's own canvas as a third TUI tier
 
-**Status:** Draft — nothing built, nothing published. The hardcoded files under live iteration live
-on branch `feat/classic-tier`, never on `main`; `main` ships no `classic` artifact and its validator
-stays green.
+**Status:** Draft — nothing built, nothing published. The three hardcoded prototype files live on
+this branch, under iteration, and carry no `VARIANTS` entry yet: the validator reports them as three
+`criterion-5` orphans (3 failures, 41 checks passed) until the tier lands in the builder. `main` is
+green because none of them are there.
 **Date:** 2026-10-20
 **Scope:** `prototypes/build-prototypes.mjs`, `prototypes/validate-prototypes.mjs`, `README.md`, `docs/SOURCES.md`
 **Tested so far:** OpenCode only. Pi pending. Claude Code deliberately deprioritized (it inherits a
@@ -117,9 +118,50 @@ any code is written, because it changes what the README is allowed to claim.
 
 ### Pi selection
 
-Pi selection is a per-tier flat, user-tested, never chained. A starting point for the lighter canvas,
-derived from `accentSelection #8c8eff45` composited over `#24212e`, is `#403e67`. Derived is not
-tested; it is a candidate to look at, not a value to ship.
+Pi selection is a per-tier flat, user-tested, never chained. Two starting points were derived for the
+lighter canvas:
+
+- `#403e67` — `accentSelection #8c8eff45` composited over `#24212e`.
+- `#373658` — dark's per-channel offset (`#2b2a4a - #181520 = (19,21,42)`) applied to `#24212e`.
+  This is the one seeded in the live prototype, because it keeps the quiet relationship to the canvas
+  that the shipped tiers already have.
+
+Neither is tested. Both are candidates to look at, not values to ship.
+
+## Live prototypes (hardcoded, 2026-10-20)
+
+Three hand-written files let the tier be tested without touching the builder. They are **not** build
+outputs: no `VARIANTS` entry claims them yet.
+
+| File | Derived from | Keys that moved |
+| --- | --- | --- |
+| `prototypes/opencode/funky-classic-prototype.json` | `funky-dark-prototype.json` | 9 |
+| `prototypes/opencode/funky-classic-transparent-prototype.json` | `funky-dark-transparent-prototype.json` | 8 (`background` stays `"none"`) |
+| `prototypes/pi/funky-classic-prototype.json` | `funky-dark-prototype.json` | `name` + 11 `vars` |
+
+Every other byte is identical to the `dark` sibling, so any visual difference between the two is the
+tier and nothing else. Values applied:
+
+| Slot group | Value | Origin |
+| --- | --- | --- |
+| `background` / Pi `bg`, `bgPanel`, `bgSubtle`, `toolPendingBg` | `#24212e` | palette `bgBase` |
+| `backgroundElement` / Pi `bgElement`, `userMessageBg`, `toolSuccessBg` | `#2c2938` | recut (fork **B**, explicitly provisional) |
+| `backgroundPanel`, `diffContextBg` | `#282533` | declared flat, one lift below elevated |
+| `border`, `diffAddedBg`, `diffAddedLineNumberBg` | `#35334e` | declared flat, `+0x0c/+0x0e` over step 1 |
+| `diffRemovedBg`, `diffRemovedLineNumberBg`, Pi `toolErrorBg` | `#461e29` | declared flat, same lift |
+| Pi `deepPink` | `#423c62` | `searchBackground #5f569580` over `#24212e` (formula reproduces dark's `#3c365b`) |
+| Pi `infoBg` | `#2d3745` | `cyanDim #80ecff1f` over `deep #211e2b` (reproduces dark's `#1f2b34`) |
+| Pi `selection` | `#373658` | offset seed, **untested** |
+
+`markdownListItem` / `syntaxType` / `champagne` stay at `#fff9b7`: the `#fff9ba` attenuation is a
+`darker`-only correction and does not belong here.
+
+### Validator status while these exist
+
+`node prototypes/validate-prototypes.mjs` reports **exactly three** `criterion-5` failures — the three
+files as orphans — and 41 other checks pass. That is the expected, honest cost of testing without a
+`VARIANTS` entry, not a bug in the files. The day the tier lands in the builder, those three
+failures disappear; until then, a red criterion-5 is the reminder that these are experiments.
 
 ## Implementation sketch
 
@@ -174,10 +216,9 @@ That framing is honest: it says out loud that `dark`/`darker` are the terminal-a
 
 - **2026-10-20** — Tier id `classic` agreed. Flat set drafted and tested in OpenCode only. Nothing
   built; `#2e2a3a` explicitly left open pending a second test round.
-- **2026-10-20 (later)** — Three hardcoded prototype files added on branch `feat/classic-tier`
-  (OpenCode solid + transparent, Pi solid) with `#2c2938` as the provisional elevation, for live
-  iteration. No script touched; the builder still knows two tiers. `main` carries none of them, so
-  its validator stays green. `#2c2938` remains fork **B** and is expected to move.
+- **2026-10-20 (later)** — Three hardcoded prototype files added (OpenCode solid + transparent, Pi
+  solid) with `#2c2938` as the provisional elevation, for live iteration. No script touched; the
+  builder still knows two tiers. `#2c2938` remains fork **B** and is expected to move.
 - **2026-10-20 (last)** — README publishes the OpenCode capture under 📸 Preview as "work in progress":
   caption, one paragraph of framing (chain step 0, the palette's own canvas), and a caveat stating it is
   not shipped and not part of the 8 files. The capture survives either fork of `backgroundElement` — A
