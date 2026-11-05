@@ -7,4 +7,4 @@ Build area for the Funky TUI themes. Source and output live side by side on purp
 - Output (never hand-edit, rebuild overwrites): `claude-code/`, `opencode/`, `pi/` — 8 JSONs.
 
 From the repo root: `node prototypes/build-prototypes.mjs`, then
-`node prototypes/validate-prototypes.mjs` (41 checks), then `node scripts/check-upstream.mjs`.
+`node prototypes/validate-prototypes.mjs` (42 checks), then `node scripts/check-upstream.mjs`.
