@@ -235,7 +235,7 @@ The same role can land on a different hue in two agents, and that is by design: 
 
 ```bash
 node prototypes/build-prototypes.mjs       # emits 8 JSONs from 54 palette tokens
-node prototypes/validate-prototypes.mjs    # 41 checks on generated artifacts
+node prototypes/validate-prototypes.mjs    # 42 checks on generated artifacts
 node scripts/check-upstream.mjs             # 28 provenance checks (read-only)
 ```
 

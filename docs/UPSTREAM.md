@@ -35,7 +35,7 @@ repo. Short rules live in AGENTS.md; the process lives here.
    `prototypes/build-prototypes.mjs`. Emitted `prototypes/*/*.json` are build outputs; hand-editing
    them is reverted on the next build (proven: build + clean `git status`).
 5. **Rebuild + validate.** `node prototypes/build-prototypes.mjs`, then
-   `node prototypes/validate-prototypes.mjs` (41 checks). Read the `git diff` to confirm exactly
+   `node prototypes/validate-prototypes.mjs` (42 checks). Read the `git diff` to confirm exactly
    what moved.
 6. **Install + live test.** Copy the rebuilt files into the install dirs and look at a real
    terminal. Checker warnings on a testing machine are legal; the manifest is truthful again before
